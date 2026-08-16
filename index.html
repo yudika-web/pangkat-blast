@@ -835,7 +835,11 @@
             SFX.blast();
             
             document.getElementById('line-svg').innerHTML = ''; 
+            
+            // FIX: Menambahkan class 'hidden' agar overlay benar-benar hilang seketika
+            // sehingga ledakan balok di belakangnya langsung terlihat jelas!
             document.getElementById('solve-overlay').classList.remove('flex');
+            document.getElementById('solve-overlay').classList.add('hidden'); 
             
             const gameView = document.getElementById('view-game');
             gameView.classList.add('anim-shake');
@@ -850,7 +854,7 @@
             boomText.className = 'anim-boom';
             boomText.innerText = 'BOOM!';
             gameView.appendChild(boomText);
-            setTimeout(() => boomText.remove(), 800);
+            setTimeout(() => boomText.remove(), 800); 
             
             state.buildBlocks.forEach(b => {
                 const el = document.getElementById(b.id);
@@ -864,6 +868,8 @@
             state.score += points;
             updateHUD();
 
+            // FIX: Mempercepat jeda memuat soal berikutnya (dari 1200ms ke 850ms)
+            // agar tempo permainan terasa lebih cepat dan tidak membosankan.
             setTimeout(() => {
                 state.qIdx++;
                 if (state.qIdx >= state.questions.length) {
@@ -871,7 +877,7 @@
                 } else {
                     loadQuestion();
                 }
-            }, 1200);
+            }, 850);
         }
 
         function handleWrongBuild(q) {
