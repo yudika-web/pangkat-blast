@@ -261,13 +261,25 @@
                     stages: [
                         { id: 1, type: "normal", questions: [
                             { q: "Nilai dari 3²", build: ["3", "²"], buildAlt: ["3", "×", "3"], ans: 9, hint: "Pangkat 2 artinya dikalikan dengan bilangan itu sendiri." },
-                            { q: "Nilai dari 2³", build: ["2", "³"], buildAlt: ["2", "×", "2", "×", "2"], ans: 8, hint: "Angka 2 dikalikan sebanyak 3 kali." },
-                            { q: "Nilai dari 4²", build: ["4", "²"], buildAlt: ["4", "×", "4"], ans: 16, hint: "Bisa disusun '4²' atau '4 × 4'." }
+                            { q: "Nilai dari 2³", build: ["2", "³"], buildAlt: ["2", "×", "2", "×", "2"], ans: 8, hint: "Angka 2 dikalikan sebanyak 3 kali." }
                         ]},
                         { id: 2, type: "normal", questions: [
                             { q: "Hasil dari 5²", build: ["5", "²"], buildAlt: ["5", "×", "5"], ans: 25, hint: "5 dikali 5." },
-                            { q: "Nilai dari 10³", build: ["1", "0", "³"], buildAlt: ["10", "³"], ans: 1000, hint: "10 × 10 × 10." }, // Demonstrating multi-char block fallback
                             { q: "Hasil dari 2⁴", build: ["2", "⁴"], buildAlt: ["2", "×", "2", "×", "2", "×", "2"], ans: 16, hint: "Kalikan 2 sebanyak 4 kali." }
+                        ]}
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "NEGATIVE ZONE",
+                    stages: [
+                        { id: 3, type: "normal", questions: [
+                            { q: "Nilai dari -2²", build: ["-", "2", "²"], buildAlt: ["-", "2", "×", "2"], ans: -4, hint: "Minus TIDAK ikut dipangkatkan jika tidak ada kurung." },
+                            { q: "Nilai dari -3²", build: ["-", "3", "²"], buildAlt: ["-", "3", "×", "3"], ans: -9, hint: "Tanda minus tetap di luar, yang dipangkatkan hanya angkanya." }
+                        ]},
+                        { id: 4, type: "normal", questions: [
+                            { q: "Nilai dari (-2)²", build: ["(", "-", "2", ")", "²"], buildAlt: ["(", "-", "2", ")", "×", "(", "-", "2", ")"], ans: 4, hint: "Minus IKUT dipangkatkan. Negatif kali negatif = positif." },
+                            { q: "Nilai dari (-3)³", build: ["(", "-", "3", ")", "³"], ans: -27, hint: "Negatif pangkat ganjil hasilnya tetap negatif." }
                         ]}
                     ]
                 }
@@ -382,38 +394,47 @@
             const container = document.getElementById('map-container');
             container.innerHTML = '';
             
-            const w = gameData.worlds[0]; // Currently only 1 world mocked
-            
-            const title = document.createElement('div');
-            title.className = "text-xl font-bold text-slate-400 mb-4 tracking-widest text-center w-full";
-            title.innerText = `WORLD ${w.id}: ${w.name}`;
-            container.appendChild(title);
+            gameData.worlds.forEach((w, wIdx) => {
+                // Cek apakah World ini sudah terbuka (stage pertamanya <= unlockedStage)
+                const isWorldUnlocked = w.stages[0].id <= state.unlockedStage;
+                
+                const title = document.createElement('div');
+                title.className = `text-xl font-bold mb-4 tracking-widest text-center w-full mt-6 ${isWorldUnlocked ? 'text-cyan-400 drop-shadow-[0_0_5px_#00f3ff]' : 'text-slate-600'}`;
+                title.innerHTML = `WORLD ${w.id}: ${w.name} ${isWorldUnlocked ? '🔓' : '🔒'}`;
+                container.appendChild(title);
 
-            // Render nodes bottom to top visually (reverse order)
-            const stagesRev = [...w.stages].reverse();
-            
-            stagesRev.forEach((st, idx) => {
-                const node = document.createElement('div');
-                const isUnlocked = st.id <= state.unlockedStage;
-                const isCompleted = st.id < state.unlockedStage;
-                
-                node.className = `map-node ${isCompleted ? 'completed' : (isUnlocked ? 'unlocked' : '')}`;
-                node.innerText = isCompleted ? '⭐' : (isUnlocked ? st.id : '🔒');
-                
-                if (isUnlocked) {
-                    node.onclick = () => startStage(w.id, st.id);
-                }
-                
-                container.appendChild(node);
-                
-                // Add line connector except for last element (which is visually the top)
-                if (idx < stagesRev.length - 1) {
-                    const lineUnlocked = (st.id - 1) <= state.unlockedStage;
-                    const line = document.createElement('div');
-                    line.className = `line-connector ${lineUnlocked ? 'unlocked' : ''}`;
-                    container.appendChild(line);
-                }
+                w.stages.forEach((st, sIdx) => {
+                    const isUnlocked = st.id <= state.unlockedStage;
+                    const isCompleted = st.id < state.unlockedStage;
+                    
+                    const node = document.createElement('div');
+                    node.className = `map-node ${isCompleted ? 'completed' : (isUnlocked ? 'unlocked' : '')}`;
+                    node.innerText = isCompleted ? '⭐' : (isUnlocked ? st.id : '🔒');
+                    
+                    if (isUnlocked) {
+                        node.onclick = () => startStage(w.id, st.id);
+                    }
+                    
+                    container.appendChild(node);
+                    
+                    // Tambahkan garis penghubung, kecuali untuk stage terakhir di world terakhir
+                    const isLastStageTotal = (wIdx === gameData.worlds.length - 1) && (sIdx === w.stages.length - 1);
+                    if (!isLastStageTotal) {
+                        const nextStageUnlocked = (st.id + 1) <= state.unlockedStage;
+                        const line = document.createElement('div');
+                        line.className = `line-connector ${nextStageUnlocked ? 'unlocked' : ''}`;
+                        container.appendChild(line);
+                    }
+                });
             });
+
+            // Otomatis scroll ke stage yang sedang aktif
+            setTimeout(() => {
+                const activeNodes = document.querySelectorAll('.map-node.unlocked:not(.completed)');
+                if (activeNodes.length > 0) {
+                    activeNodes[activeNodes.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         }
 
         function startStage(wId, sId) {
@@ -477,21 +498,22 @@
         function generateGrid(requiredVals) {
             const grid = document.getElementById('block-grid');
             grid.innerHTML = '';
-            document.getElementById('line-svg').innerHTML = ''; // Clear SVG lines
+            document.getElementById('line-svg').innerHTML = ''; // Bersihkan garis
             state.gridData = [];
 
-            // Math distractors including operators
+            // Distractor pool based on math (Menambahkan Tanda Kurung dan Minus)
             const ops = ['×', '+', '-', '÷'];
             const nums = ['2', '3', '4', '5', '10', '²', '³', '⁴', '⁻²'];
-            const pool = [...nums, ...ops];
+            const brackets = ['(', ')'];
+            const pool = [...nums, ...ops, ...brackets];
             
-            // Start with required blocks, then fill to 16
+            // Masukkan balok wajib, lalu isi sisanya sampai 16 balok
             let finalBlocks = [...requiredVals];
             while (finalBlocks.length < 16) {
                 finalBlocks.push(pool[Math.floor(Math.random() * pool.length)]);
             }
             
-            // Shuffle
+            // Acak posisi balok
             finalBlocks.sort(() => Math.random() - 0.5);
 
             finalBlocks.forEach((val, idx) => {
@@ -501,6 +523,7 @@
                 let colorClass = 'block-number';
                 if (['²', '³', '⁴', '⁻²'].includes(val)) colorClass = 'block-power';
                 else if (ops.includes(val)) colorClass = 'block-operation';
+                else if (brackets.includes(val)) colorClass = 'bg-gradient-to-br from-orange-500 to-amber-600 border-b-4 border-orange-800'; // Warna khusus tanda kurung
 
                 btn.className = `block-base ${colorClass} text-4xl font-bold font-pixel`;
                 btn.innerText = val;
