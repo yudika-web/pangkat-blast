@@ -18,11 +18,10 @@
             background-color: var(--bg-dark);
             color: white;
             overflow: hidden;
-            touch-action: none; /* Prevent pull-to-refresh */
+            touch-action: none;
         }
         .font-pixel { font-family: 'VT323', monospace; }
         
-        /* Utility Animations */
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
@@ -43,32 +42,6 @@
         }
         .neon-border { border: 2px solid var(--neon-blue); animation: pulse-neon 2s infinite; }
 
-        /* Block Styles */
-        .block-base { 
-            border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; 
-            transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none;
-            cursor: pointer;
-        }
-        .block-number { background: linear-gradient(135deg, #1e3a8a, #3b82f6); border-bottom: 4px solid #1e3a8a; }
-        .block-power { background: linear-gradient(135deg, #7e22ce, #d946ef); border-bottom: 4px solid #4c1d95; }
-        .block-operation { background: linear-gradient(135deg, #047857, #10b981); border-bottom: 4px solid #064e3b; }
-        
-        .block-selected { 
-            transform: scale(0.9); opacity: 0.8; border-bottom-width: 0px; margin-top: 4px; 
-            box-shadow: 0 0 15px var(--neon-blue); 
-        }
-        .block-blast {
-            animation: blast 0.4s forwards;
-            pointer-events: none;
-        }
-
-        @keyframes blast {
-            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
-            50% { transform: scale(1.5); opacity: 0.8; filter: brightness(2); }
-            100% { transform: scale(0); opacity: 0; filter: brightness(1); }
-        }
-
-        /* BOOM & Shockwave Effects */
         @keyframes shockwave {
             0% { transform: translate(-50%, -50%) scale(0); opacity: 1; border-width: 15px; border-color: var(--neon-blue); }
             100% { transform: translate(-50%, -50%) scale(5); opacity: 0; border-width: 1px; border-color: var(--neon-pink); }
@@ -92,11 +65,68 @@
             animation: boom-text 0.8s ease-out forwards; pointer-events: none; z-index: 50;
         }
 
-        /* Layout Views */
+        .block-base { 
+            border-radius: 8px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            cursor: pointer;
+            background-color: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(6px);
+            border: 2px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.05), 0 4px 6px rgba(0,0,0,0.4);
+        }
+        
+        .block-number { 
+            border-color: rgba(0, 243, 255, 0.8); 
+            color: #00f3ff;
+            background-color: rgba(0, 243, 255, 0.05);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+        .block-power { 
+            border-color: rgba(255, 0, 234, 0.8); 
+            color: #ff00ea;
+            background-color: rgba(255, 0, 234, 0.05);
+            box-shadow: 0 0 12px rgba(255, 0, 234, 0.4), inset 0 0 10px rgba(255, 0, 234, 0.2);
+        }
+        .block-operation { 
+            border-color: rgba(4, 244, 4, 0.8); 
+            color: #04f404;
+            background-color: rgba(4, 244, 4, 0.05);
+            box-shadow: 0 0 12px rgba(4, 244, 4, 0.4), inset 0 0 10px rgba(4, 244, 4, 0.2);
+        }
+        .block-bracket { 
+            border-color: rgba(250, 204, 21, 0.8); 
+            color: #facc15;
+            background-color: rgba(250, 204, 21, 0.05);
+            box-shadow: 0 0 12px rgba(250, 204, 21, 0.4), inset 0 0 10px rgba(250, 204, 21, 0.2);
+        }
+        
+        .block-selected { 
+            transform: scale(0.85) translateY(2px);
+            background-color: rgba(0, 243, 255, 0.2);
+            border-color: #00f3ff;
+            color: white; 
+            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.8), 0 0 25px rgba(0, 243, 255, 0.9), 0 0 40px rgba(0, 243, 255, 0.5);
+            z-index: 20;
+        }
+        
+        .block-blast {
+            animation: blast 0.4s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes blast {
+            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            50% { transform: scale(1.5); opacity: 0.8; filter: brightness(2); }
+            100% { transform: scale(0); opacity: 0; filter: brightness(1); }
+        }
+
         .view { display: none; width: 100vw; height: 100vh; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; background-color: var(--bg-dark); }
         .active-view { display: flex; }
         
-        /* Map nodes */
         .map-node { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 4px solid #334155; background: #1e293b; color: white; transition: all 0.3s;}
         .map-node.unlocked { border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); background: #2563eb; cursor: pointer; }
         .map-node.completed { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); background: #059669; cursor: pointer; }
@@ -119,28 +149,27 @@
             <button onclick="navTo('map')" class="w-full max-w-xs py-4 mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl text-xl font-bold font-pixel neon-border hover:scale-105 transition-transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
                 <span>▶</span> MULAI
             </button>
-            <button onclick="showInfo('Fitur Belajar akan segera hadir! Fokus selesaikan Stage 1 dulu ya.')" class="w-full max-w-xs py-3 mb-4 bg-slate-800 rounded-xl text-lg font-bold border-2 border-slate-600 hover:bg-slate-700 active:scale-95 transition-all">
-                📖 BELAJAR
+            <button onclick="startTimeChallenge()" class="w-full max-w-xs py-3 mb-4 bg-red-600 text-white rounded-xl text-lg font-bold border-2 border-red-800 hover:bg-red-700 active:scale-95 transition-all shadow-[0_0_15px_rgba(220,38,38,0.6)]">
+                ⏱️ TIME CHALLENGE
             </button>
             <button onclick="showInfo('Prestasi: Belum ada piala. Mainkan gamenya!')" class="w-full max-w-xs py-3 mb-4 bg-slate-800 rounded-xl text-lg font-bold border-2 border-slate-600 hover:bg-slate-700 active:scale-95 transition-all">
                 🏆 PRESTASI
             </button>
             
-            <div class="mt-8 text-slate-500 text-xs text-center">v1.0.0 - ⚡ POWER MASTER ⚡</div>
+            <div class="mt-8 text-slate-500 text-xs text-center">v1.1.0 - ⚡ POWER MASTER ⚡</div>
         </div>
     </div>
 
     <!-- VIEW: MAP -->
     <div id="view-map" class="view bg-slate-900 p-6">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-6 shrink-0">
             <button onclick="navTo('menu')" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600 active:bg-slate-700">
                 🏠
             </button>
             <h2 class="text-2xl font-pixel text-cyan-400 drop-shadow-[0_0_5px_#00f3ff]">WORLD MAP</h2>
-            <div class="w-10 h-10"></div> <!-- Spacer -->
+            <div class="w-10 h-10"></div>
         </div>
-
-        <div class="flex-1 overflow-y-auto pb-10 flex flex-col items-center pt-8" id="map-container">
+        <div class="flex-1 overflow-y-auto pb-10 flex flex-col items-center" id="map-container">
             <!-- Map nodes generated by JS -->
         </div>
     </div>
@@ -148,53 +177,42 @@
     <!-- VIEW: GAME -->
     <div id="view-game" class="view bg-slate-900 flex-col">
         <!-- HUD -->
-        <div class="bg-slate-800 p-3 flex justify-between items-center border-b border-slate-700 shadow-md z-30">
+        <div class="bg-slate-800 p-3 flex justify-between items-center border-b border-slate-700 shadow-md z-30 shrink-0">
             <div class="flex items-center gap-2">
                 <button onclick="confirmExit()" class="w-8 h-8 bg-slate-700 rounded flex items-center justify-center active:bg-slate-600">⏸️</button>
                 <div class="font-pixel text-xl text-cyan-300 ml-2" id="hud-stage">ST 1</div>
+                <div id="hud-timer" class="font-pixel text-xl text-yellow-400 ml-4 hidden">⏱️ 10s</div>
             </div>
             <div class="flex items-center gap-1 text-xl" id="hud-hearts">
                 ❤️ ❤️ ❤️
             </div>
         </div>
         
-        <div class="flex justify-between px-4 py-1 text-sm bg-slate-850 z-30 font-pixel">
+        <div class="flex justify-between px-4 py-1 text-sm bg-slate-850 z-30 font-pixel shrink-0">
             <div>SKOR: <span id="hud-score" class="text-yellow-400">0</span></div>
             <div class="text-pink-400 font-bold" id="hud-combo">COMBO x0</div>
         </div>
 
-        <!-- Build Expression Display -->
-        <div class="h-16 bg-slate-950 border-b-2 border-cyan-500/50 flex items-center justify-center px-4 overflow-x-auto whitespace-nowrap z-30" id="build-display">
+        <div class="h-16 bg-slate-950 border-b-2 border-cyan-500/50 flex items-center justify-center px-4 overflow-x-auto whitespace-nowrap z-30 shrink-0" id="build-display">
             <!-- Balok yang dipilih muncul di sini -->
         </div>
 
-        <!-- Instruction Area -->
         <div class="p-4 flex flex-col items-center justify-center shrink-0 min-h-[120px] bg-gradient-to-b from-slate-800 to-transparent z-30">
             <div class="text-sm text-slate-400 mb-1 font-bold tracking-widest uppercase" id="game-phase-text">TAHAP A: SUSUN BALOK</div>
-            <div id="game-question" class="text-3xl font-bold text-center h-12 flex items-center justify-center text-white font-pixel">
-                Susun 4²
-            </div>
+            <div id="game-question" class="text-3xl font-bold text-center h-12 flex items-center justify-center text-white font-pixel"></div>
         </div>
 
-        <!-- Build Area (Grid) -->
         <div class="flex-1 p-4 flex items-center justify-center relative w-full overflow-hidden">
-            <!-- Grid Container with SVG Lines Layer -->
             <div class="relative w-full max-w-[340px] aspect-square">
-                <!-- SVG layer for lines -->
                 <svg id="line-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style="overflow: visible; filter: drop-shadow(0 0 6px #00f3ff);"></svg>
-                
-                <!-- Blocks grid -->
                 <div id="block-grid" class="grid grid-cols-4 gap-3 w-full h-full relative z-10 p-2">
                     <!-- Blocks generated via JS -->
                 </div>
             </div>
             
-            <!-- Overlay for solving phase -->
             <div id="solve-overlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-30 hidden flex-col items-center justify-center p-6 transition-opacity">
                 <h3 class="text-3xl text-neon-blue font-pixel mb-6 drop-shadow-[0_0_10px_#00f3ff]">SEKARANG HITUNG!</h3>
-                <div id="solve-expression" class="text-4xl font-bold font-pixel mb-8 text-yellow-300">
-                    <!-- Expression to solve -->
-                </div>
+                <div id="solve-expression" class="text-4xl font-bold font-pixel mb-8 text-yellow-300"></div>
                 <input type="number" id="answer-input" class="w-full max-w-[200px] h-16 text-center text-3xl font-bold bg-slate-800 border-2 border-slate-500 rounded-xl mb-6 text-white focus:outline-none focus:border-cyan-400" placeholder="?">
                 <div class="flex gap-4 w-full max-w-[300px]">
                     <button onclick="clearBuild()" class="flex-1 py-3 bg-red-600 rounded-xl font-bold text-lg border-b-4 border-red-800 active:border-b-0 active:mt-4 transition-all">BATAL</button>
@@ -203,8 +221,7 @@
             </div>
         </div>
 
-        <!-- Controls -->
-        <div class="p-4 flex gap-4 justify-between bg-slate-900 border-t border-slate-800 z-30">
+        <div class="p-4 flex gap-4 justify-between bg-slate-900 border-t border-slate-800 z-30 shrink-0">
             <button onclick="useHint()" class="flex-1 py-3 bg-slate-700 rounded-xl text-yellow-300 font-bold flex items-center justify-center gap-2 active:bg-slate-600">
                 💡 HINT
             </button>
@@ -245,48 +262,141 @@
             <div class="text-4xl mb-4" id="modal-icon">⚠️</div>
             <h3 class="text-2xl font-pixel text-white mb-2" id="modal-title">Perhatian</h3>
             <p class="text-slate-300 mb-6" id="modal-text">Pesan teks di sini.</p>
-            <div class="flex gap-3 justify-center" id="modal-buttons">
-                <!-- Buttons injected via JS -->
-            </div>
+            <div class="flex gap-3 justify-center" id="modal-buttons"></div>
         </div>
     </div>
 
     <script>
-        // Game Data Definition (With Alternate Builds & Operators)
         const gameData = {
             worlds: [
                 {
-                    id: 1,
-                    name: "BASIC POWER",
+                    id: 1, name: "BASIC POWER",
                     stages: [
-                        { id: 1, type: "normal", questions: [
-                            { q: "Nilai dari 3²", build: ["3", "²"], buildAlt: ["3", "×", "3"], ans: 9, hint: "Pangkat 2 artinya dikalikan dengan bilangan itu sendiri." },
-                            { q: "Nilai dari 2³", build: ["2", "³"], buildAlt: ["2", "×", "2", "×", "2"], ans: 8, hint: "Angka 2 dikalikan sebanyak 3 kali." }
+                        { id: 1, questions: [
+                            { q: "Nilai dari 2²", build: ["2", "²"], buildAlt: ["2", "×", "2"], ans: 4, hint: "2 dikalikan dengan dirinya sendiri." },
+                            { q: "Nilai dari 3²", build: ["3", "²"], buildAlt: ["3", "×", "3"], ans: 9, hint: "3 dikalikan 3." }
                         ]},
-                        { id: 2, type: "normal", questions: [
-                            { q: "Hasil dari 5²", build: ["5", "²"], buildAlt: ["5", "×", "5"], ans: 25, hint: "5 dikali 5." },
-                            { q: "Hasil dari 2⁴", build: ["2", "⁴"], buildAlt: ["2", "×", "2", "×", "2", "×", "2"], ans: 16, hint: "Kalikan 2 sebanyak 4 kali." }
+                        { id: 2, questions: [
+                            { q: "Nilai dari 2³", build: ["2", "³"], buildAlt: ["2", "×", "2", "×", "2"], ans: 8, hint: "2 dikalikan sebanyak 3 kali." },
+                            { q: "Nilai dari 4²", build: ["4", "²"], buildAlt: ["4", "×", "4"], ans: 16, hint: "4 dikalikan 4." }
+                        ]},
+                        { id: 3, questions: [
+                            { q: "Nilai dari 5²", build: ["5", "²"], buildAlt: ["5", "×", "5"], ans: 25, hint: "5 dikali 5." },
+                            { q: "Nilai dari 10²", build: ["10", "²"], buildAlt: ["10", "×", "10"], ans: 100, hint: "10 dikali 10." }
+                        ]},
+                        { id: 4, questions: [
+                            { q: "Nilai dari 3³", build: ["3", "³"], buildAlt: ["3", "×", "3", "×", "3"], ans: 27, hint: "3 kali 3 kali 3." },
+                            { q: "Nilai dari 2⁴", build: ["2", "⁴"], buildAlt: ["2", "×", "2", "×", "2", "×", "2"], ans: 16, hint: "Kalikan 2 sebanyak 4 kali." }
+                        ]},
+                        { id: 5, questions: [
+                            { q: "Nilai dari 5³", build: ["5", "³"], buildAlt: ["5", "×", "5", "×", "5"], ans: 125, hint: "5 kali 5 kali 5." },
+                            { q: "Nilai dari 10³", build: ["10", "³"], buildAlt: ["10", "×", "10", "×", "10"], ans: 1000, hint: "10 x 10 x 10." }
                         ]}
                     ]
                 },
                 {
-                    id: 2,
-                    name: "NEGATIVE ZONE",
+                    id: 2, name: "NEGATIVE ZONE",
                     stages: [
-                        { id: 3, type: "normal", questions: [
+                        { id: 6, questions: [
                             { q: "Nilai dari -2²", build: ["-", "2", "²"], buildAlt: ["-", "2", "×", "2"], ans: -4, hint: "Minus TIDAK ikut dipangkatkan jika tidak ada kurung." },
                             { q: "Nilai dari -3²", build: ["-", "3", "²"], buildAlt: ["-", "3", "×", "3"], ans: -9, hint: "Tanda minus tetap di luar, yang dipangkatkan hanya angkanya." }
                         ]},
-                        { id: 4, type: "normal", questions: [
+                        { id: 7, questions: [
                             { q: "Nilai dari (-2)²", build: ["(", "-", "2", ")", "²"], buildAlt: ["(", "-", "2", ")", "×", "(", "-", "2", ")"], ans: 4, hint: "Minus IKUT dipangkatkan. Negatif kali negatif = positif." },
-                            { q: "Nilai dari (-3)³", build: ["(", "-", "3", ")", "³"], ans: -27, hint: "Negatif pangkat ganjil hasilnya tetap negatif." }
+                            { q: "Nilai dari (-3)²", build: ["(", "-", "3", ")", "²"], buildAlt: ["(", "-", "3", ")", "×", "(", "-", "3", ")"], ans: 9, hint: "Negatif × Negatif = Positif." }
+                        ]},
+                        { id: 8, questions: [
+                            { q: "Nilai dari (-2)³", build: ["(", "-", "2", ")", "³"], ans: -8, hint: "Negatif pangkat ganjil hasilnya tetap negatif." },
+                            { q: "Nilai dari -4²", build: ["-", "4", "²"], ans: -16, hint: "Tanpa kurung, minus tidak ikut dipangkatkan." }
+                        ]},
+                        { id: 9, questions: [
+                            { q: "Nilai dari (-5)²", build: ["(", "-", "5", ")", "²"], ans: 25, hint: "Pangkat genap, hasil positif." },
+                            { q: "Nilai dari -5²", build: ["-", "5", "²"], ans: -25, hint: "Tanpa kurung, hasil negatif." }
+                        ]},
+                        { id: 10, questions: [
+                            { q: "Nilai dari (-10)²", build: ["(", "-", "10", ")", "²"], ans: 100, hint: "(-10) x (-10)" },
+                            { q: "Nilai dari (-10)³", build: ["(", "-", "10", ")", "³"], ans: -1000, hint: "(-10) x (-10) x (-10)" }
+                        ]}
+                    ]
+                },
+                {
+                    id: 3, name: "ZERO GRAVITY",
+                    stages: [
+                        { id: 11, questions: [
+                            { q: "Nilai dari 5⁰", build: ["5", "⁰"], ans: 1, hint: "Bilangan berapapun (kecuali 0) dipangkatkan 0 hasilnya 1." },
+                            { q: "Nilai dari 10⁰", build: ["10", "⁰"], ans: 1, hint: "Aturan pangkat nol selalu bernilai 1." }
+                        ]},
+                        { id: 12, questions: [
+                            { q: "Nilai dari (-3)⁰", build: ["(", "-", "3", ")", "⁰"], ans: 1, hint: "Bahkan bilangan negatif pangkat 0 hasilnya 1." },
+                            { q: "Nilai dari -4⁰", build: ["-", "4", "⁰"], ans: -1, hint: "Hati-hati! Ini -(4⁰), bukan (-4)⁰." }
+                        ]},
+                        { id: 13, questions: [
+                            { q: "Nilai dari 2⁻¹", build: ["2", "⁻¹"], ans: 0.5, hint: "2 pangkat -1 sama dengan 1 dibagi 2 (0.5)." },
+                            { q: "Nilai dari 10⁻¹", build: ["10", "⁻¹"], ans: 0.1, hint: "1 dibagi 10 = 0.1" }
+                        ]},
+                        { id: 14, questions: [
+                            { q: "Nilai dari 2⁻²", build: ["2", "⁻²"], ans: 0.25, hint: "1 dibagi (2²), yaitu 1/4 atau 0.25." },
+                            { q: "Nilai dari 10⁻²", build: ["10", "⁻²"], ans: 0.01, hint: "1 dibagi 100 = 0.01" }
+                        ]},
+                        { id: 15, questions: [
+                            { q: "Hitung 2⁰ + 3⁰", build: ["2", "⁰", "+", "3", "⁰"], ans: 2, hint: "Keduanya bernilai 1. Jadi 1 + 1." },
+                            { q: "Hitung 10⁰ - 5⁰", build: ["10", "⁰", "-", "5", "⁰"], ans: 0, hint: "1 - 1" }
+                        ]}
+                    ]
+                },
+                {
+                    id: 4, name: "POWER BATTLE",
+                    stages: [
+                        { id: 16, questions: [
+                            { q: "Hitung 2² × 2³", build: ["2", "²", "×", "2", "³"], buildAlt: ["2", "⁵"], ans: 32, hint: "Basis sama dikali = Pangkat ditambah: 2^(2+3)" },
+                            { q: "Hitung 3² × 3", build: ["3", "²", "×", "3"], ans: 27, hint: "3 itu sama dengan 3¹. Pangkat ditambah: 2+1=3." }
+                        ]},
+                        { id: 17, questions: [
+                            { q: "Hitung 2⁵ ÷ 2³", build: ["2", "⁵", "÷", "2", "³"], buildAlt: ["2", "²"], ans: 4, hint: "Basis sama dibagi = Pangkat dikurang: 2^(5-3)" },
+                            { q: "Hitung 10³ ÷ 10", build: ["10", "³", "÷", "10"], buildAlt: ["10", "²"], ans: 100, hint: "10^(3-1) = 10²" }
+                        ]},
+                        { id: 18, questions: [
+                            { q: "Hitung 2³ + 2²", build: ["2", "³", "+", "2", "²"], ans: 12, hint: "Penjumlahan TIDAK BISA digabung pangkatnya. Hitung manual: 8 + 4" },
+                            { q: "Hitung 3² - 2³", build: ["3", "²", "-", "2", "³"], ans: 1, hint: "Hitung manual: 9 - 8" }
+                        ]},
+                        { id: 19, questions: [
+                            { q: "Nilai (2²)³", build: ["(", "2", "²", ")", "³"], buildAlt: ["2", "⁶"], ans: 64, hint: "Pangkat dipangkatkan = Pangkat dikali: 2^(2×3)" },
+                            { q: "Nilai (10²)²", build: ["(", "10", "²", ")", "²"], buildAlt: ["10", "⁴"], ans: 10000, hint: "10^(2×2) = 10⁴" }
+                        ]},
+                        { id: 20, questions: [
+                            { q: "Hitung (2³ × 2) ÷ 2²", build: ["(", "2", "³", "×", "2", ")", "÷", "2", "²"], buildAlt: ["2", "²"], ans: 4, hint: "Selesaikan dalam kurung dulu: 2⁴ ÷ 2²" },
+                            { q: "Hitung 5² × 5⁰", build: ["5", "²", "×", "5", "⁰"], ans: 25, hint: "5² × 1 = 25" }
+                        ]}
+                    ]
+                },
+                {
+                    id: 5, name: "FINAL EXAM",
+                    stages: [
+                        { id: 21, questions: [
+                            { q: "Hitung 10² ÷ 5²", build: ["10", "²", "÷", "5", "²"], ans: 4, hint: "Hitung nilai masing-masing: 100 ÷ 25" },
+                            { q: "Hitung 2³ × 5³", build: ["2", "³", "×", "5", "³"], ans: 1000, hint: "Bisa juga dihitung (2×5)³ = 10³" }
+                        ]},
+                        { id: 22, questions: [
+                            { q: "Nilai (-2)² + 2²", build: ["(", "-", "2", ")", "²", "+", "2", "²"], ans: 8, hint: "4 + 4" },
+                            { q: "Nilai -3² + (-3)²", build: ["-", "3", "²", "+", "(", "-", "3", ")", "²"], ans: 0, hint: "-9 + 9" }
+                        ]},
+                        { id: 23, questions: [
+                            { q: "Hitung 2⁻¹ + 2⁻¹", build: ["2", "⁻¹", "+", "2", "⁻¹"], ans: 1, hint: "0.5 + 0.5 atau 1/2 + 1/2" },
+                            { q: "Hitung 10⁰ - 10⁻¹", build: ["10", "⁰", "-", "10", "⁻¹"], ans: 0.9, hint: "1 - 0.1" }
+                        ]},
+                        { id: 24, questions: [
+                            { q: "Nilai ((2²)²)⁰", build: ["(", "(", "2", "²", ")", "²", ")", "⁰"], ans: 1, hint: "Semuanya dipangkatkan 0, hasilnya pasti 1." },
+                            { q: "Hitung (5³ ÷ 5²)²", build: ["(", "5", "³", "÷", "5", "²", ")", "²"], buildAlt: ["5", "²"], ans: 25, hint: "Di dalam kurung hasilnya 5¹, lalu dipangkatkan 2." }
+                        ]},
+                        { id: 25, questions: [
+                            { q: "Boss: (2³ × 2²) ÷ 2⁴", build: ["(", "2", "³", "×", "2", "²", ")", "÷", "2", "⁴"], buildAlt: ["2", "¹"], ans: 2, hint: "2^(3+2-4) = 2¹" },
+                            { q: "Boss: 4² - 2³ × 2", build: ["4", "²", "-", "2", "³", "×", "2"], ans: 0, hint: "16 - (8 × 2) = 16 - 16. Kali dihitung duluan!" }
                         ]}
                     ]
                 }
             ]
         };
 
-        // Synthesizer for SFX (No external assets)
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const SFX = {
             playTone: (freq, type, duration, vol=0.1) => {
@@ -305,8 +415,8 @@
             select: () => SFX.playTone(600, 'sine', 0.1, 0.1),
             deselect: () => SFX.playTone(300, 'sine', 0.1, 0.1),
             blast: () => {
-                SFX.playTone(150, 'square', 0.3, 0.2); // Explosion boom
-                setTimeout(() => SFX.playTone(800, 'sine', 0.4, 0.1), 100); // Shimmer
+                SFX.playTone(150, 'square', 0.3, 0.2); 
+                setTimeout(() => SFX.playTone(800, 'sine', 0.4, 0.1), 100); 
             },
             wrong: () => {
                 SFX.playTone(200, 'sawtooth', 0.2, 0.1);
@@ -319,13 +429,11 @@
             }
         };
 
-        // App State
         let state = {
             currentView: 'menu',
             unlockedStage: 1,
             score: 0,
-            
-            // Current gameplay state
+            mode: 'normal',
             worldId: 1,
             stageId: 1,
             questions: [],
@@ -334,9 +442,11 @@
             combo: 0,
             maxCombo: 0,
             mistakes: 0,
-            phase: 'build', // 'build' or 'solve'
-            gridData: [], // {id, val, selected, elem}
-            buildBlocks: [], // {id, val}
+            phase: 'build', 
+            gridData: [], 
+            buildBlocks: [],
+            timeLeft: 10,
+            timerInterval: null
         };
 
         function navTo(viewId) {
@@ -351,93 +461,60 @@
             }
         }
 
-        // Custom Modal Logic
-        function showModal(title, text, icon, buttonsHTML) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-text').innerText = text;
-            document.getElementById('modal-icon').innerText = icon;
-            document.getElementById('modal-buttons').innerHTML = buttonsHTML;
-            
-            const overlay = document.getElementById('modal-overlay');
-            const content = document.getElementById('modal-content');
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            setTimeout(() => {
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
-            }, 10);
-        }
-
-        function closeModal() {
-            const overlay = document.getElementById('modal-overlay');
-            const content = document.getElementById('modal-content');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                overlay.classList.remove('flex');
-                overlay.classList.add('hidden');
-            }, 200);
-        }
-
-        function showInfo(text) {
-            showModal('Informasi', text, 'ℹ️', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">OK</button>`);
-        }
-
-        function confirmExit() {
-            showModal('Keluar Stage?', 'Progres di stage ini akan hilang.', '⚠️', `
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-600 rounded-lg text-white font-bold">Batal</button>
-                <button onclick="closeModal(); navTo('map');" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">Keluar</button>
-            `);
-        }
-
         function renderMap() {
             const container = document.getElementById('map-container');
             container.innerHTML = '';
             
-            gameData.worlds.forEach((w, wIdx) => {
-                // Cek apakah World ini sudah terbuka (stage pertamanya <= unlockedStage)
-                const isWorldUnlocked = w.stages[0].id <= state.unlockedStage;
-                
-                const title = document.createElement('div');
-                title.className = `text-xl font-bold mb-4 tracking-widest text-center w-full mt-6 ${isWorldUnlocked ? 'text-cyan-400 drop-shadow-[0_0_5px_#00f3ff]' : 'text-slate-600'}`;
-                title.innerHTML = `WORLD ${w.id}: ${w.name} ${isWorldUnlocked ? '🔓' : '🔒'}`;
-                container.appendChild(title);
+            let worldsReversed = [...gameData.worlds].reverse();
+            
+            worldsReversed.forEach((world) => {
+                const wTitle = document.createElement('div');
+                wTitle.className = 'text-2xl font-pixel text-pink-400 my-6 drop-shadow-[0_0_5px_#ff00ea] text-center w-full';
+                wTitle.innerText = `WORLD ${world.id}\n${world.name}`;
+                container.appendChild(wTitle);
 
-                w.stages.forEach((st, sIdx) => {
-                    const isUnlocked = st.id <= state.unlockedStage;
-                    const isCompleted = st.id < state.unlockedStage;
-                    
+                let stagesReversed = [...world.stages].reverse();
+                
+                stagesReversed.forEach((stage) => {
+                    const globalStageId = stage.id;
+                    const isUnlocked = globalStageId <= state.unlockedStage;
+                    const isCompleted = globalStageId < state.unlockedStage;
+
                     const node = document.createElement('div');
-                    node.className = `map-node ${isCompleted ? 'completed' : (isUnlocked ? 'unlocked' : '')}`;
-                    node.innerText = isCompleted ? '⭐' : (isUnlocked ? st.id : '🔒');
+                    node.className = `map-node ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''} relative z-10 mx-auto`;
                     
-                    if (isUnlocked) {
-                        node.onclick = () => startStage(w.id, st.id);
+                    if (isCompleted) {
+                        node.innerHTML = '⭐';
+                        node.onclick = () => startStage(world.id, stage.id);
+                    } else if (isUnlocked) {
+                        node.innerHTML = stage.id;
+                        node.onclick = () => startStage(world.id, stage.id);
+                    } else {
+                        node.innerHTML = '🔒';
                     }
                     
                     container.appendChild(node);
                     
-                    // Tambahkan garis penghubung, kecuali untuk stage terakhir di world terakhir
-                    const isLastStageTotal = (wIdx === gameData.worlds.length - 1) && (sIdx === w.stages.length - 1);
-                    if (!isLastStageTotal) {
-                        const nextStageUnlocked = (st.id + 1) <= state.unlockedStage;
+                    if (!(world.id === 1 && stage.id === 1)) {
                         const line = document.createElement('div');
-                        line.className = `line-connector ${nextStageUnlocked ? 'unlocked' : ''}`;
+                        const prevStageCompleted = (globalStageId - 1) < state.unlockedStage; 
+                        line.className = `line-connector ${prevStageCompleted ? 'unlocked' : ''} z-0 mx-auto`;
                         container.appendChild(line);
                     }
                 });
             });
 
-            // Otomatis scroll ke stage yang sedang aktif
             setTimeout(() => {
-                const activeNodes = document.querySelectorAll('.map-node.unlocked:not(.completed)');
-                if (activeNodes.length > 0) {
-                    activeNodes[activeNodes.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                const unlockedNode = document.querySelector('.map-node.unlocked:not(.completed)');
+                if(unlockedNode) unlockedNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
         }
 
         function startStage(wId, sId) {
+            state.mode = 'normal';
+            document.getElementById('hud-timer').classList.add('hidden');
+            stopTimer();
+            
             state.worldId = wId;
             state.stageId = sId;
             
@@ -456,6 +533,81 @@
             
             navTo('game');
             loadQuestion();
+        }
+
+        function startTimeChallenge() {
+            state.mode = 'time_challenge';
+            state.score = 0;
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.hearts = 3;
+            state.mistakes = 0;
+            
+            state.questions = [];
+            gameData.worlds.forEach(w => {
+                w.stages.forEach(s => {
+                    state.questions = state.questions.concat(s.questions);
+                });
+            });
+            state.questions.sort(() => Math.random() - 0.5);
+            state.qIdx = 0;
+            
+            document.getElementById('hud-stage').innerText = `TIME ATK`;
+            document.getElementById('hud-timer').classList.remove('hidden');
+            
+            updateHUD();
+            navTo('game');
+            loadQuestion();
+        }
+
+        function startTimer() {
+            if (state.mode !== 'time_challenge') return;
+            clearInterval(state.timerInterval);
+            state.timeLeft = 10;
+            updateTimerDisplay();
+            
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                updateTimerDisplay();
+                if (state.timeLeft <= 0) {
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(state.timerInterval);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('hud-timer');
+            timerEl.innerText = `⏱️ ${state.timeLeft}s`;
+            if (state.timeLeft <= 3) {
+                timerEl.classList.add('text-red-500', 'anim-shake');
+                timerEl.classList.remove('text-yellow-400');
+            } else {
+                timerEl.classList.remove('text-red-500', 'anim-shake');
+                timerEl.classList.add('text-yellow-400');
+            }
+        }
+
+        function handleTimeout() {
+            stopTimer();
+            SFX.wrong();
+            state.hearts--;
+            state.combo = 0;
+            state.mistakes++;
+            updateHUD();
+            
+            clearBuild();
+            document.getElementById('solve-overlay').classList.add('hidden');
+            document.getElementById('solve-overlay').classList.remove('flex');
+            
+            if (state.hearts <= 0) {
+                showModal('GAME OVER', 'Waktu habis dan nyawamu kosong!', '⏰', `<button onclick="closeModal(); navTo('menu');" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Ke Menu</button>`);
+            } else {
+                showModal('WAKTU HABIS!', 'Kamu terlalu lama berpikir. Nyawa dikurangi 1. Siap untuk mencoba lagi?', '⏰', `<button onclick="closeModal(); startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
+            }
         }
 
         function updateHUD() {
@@ -487,45 +639,47 @@
             
             renderBuildDisplay();
             
-            // Combine main build and alt build to ensure all necessary blocks are present
             let requiredVals = [...q.build];
             if (q.buildAlt) {
                 requiredVals = requiredVals.concat(q.buildAlt);
             }
             generateGrid(requiredVals);
+            
+            if (state.mode === 'time_challenge') {
+                startTimer();
+            }
         }
 
         function generateGrid(requiredVals) {
             const grid = document.getElementById('block-grid');
             grid.innerHTML = '';
-            document.getElementById('line-svg').innerHTML = ''; // Bersihkan garis
+            document.getElementById('line-svg').innerHTML = ''; 
             state.gridData = [];
 
-            // Distractor pool based on math (Menambahkan Tanda Kurung dan Minus)
             const ops = ['×', '+', '-', '÷'];
-            const nums = ['2', '3', '4', '5', '10', '²', '³', '⁴', '⁻²'];
+            const nums = ['2', '3', '4', '5', '10', '²', '³', '⁴', '⁵', '⁶', '⁰', '⁻¹', '⁻²'];
             const brackets = ['(', ')'];
             const pool = [...nums, ...ops, ...brackets];
             
-            // Masukkan balok wajib, lalu isi sisanya sampai 16 balok
             let finalBlocks = [...requiredVals];
             while (finalBlocks.length < 16) {
                 finalBlocks.push(pool[Math.floor(Math.random() * pool.length)]);
             }
             
-            // Acak posisi balok
             finalBlocks.sort(() => Math.random() - 0.5);
+
+            const powerSymbols = ['²', '³', '⁴', '⁵', '⁶', '⁰', '⁻¹', '⁻²'];
 
             finalBlocks.forEach((val, idx) => {
                 const id = 'block-' + idx;
                 const btn = document.createElement('div');
                 
                 let colorClass = 'block-number';
-                if (['²', '³', '⁴', '⁻²'].includes(val)) colorClass = 'block-power';
+                if (powerSymbols.includes(val)) colorClass = 'block-power';
                 else if (ops.includes(val)) colorClass = 'block-operation';
-                else if (brackets.includes(val)) colorClass = 'bg-gradient-to-br from-orange-500 to-amber-600 border-b-4 border-orange-800'; // Warna khusus tanda kurung
+                else if (brackets.includes(val)) colorClass = 'block-bracket';
 
-                btn.className = `block-base ${colorClass} text-4xl font-bold font-pixel`;
+                btn.className = `block-base ${colorClass} text-5xl font-bold font-pixel`;
                 btn.innerText = val;
                 btn.id = id;
                 btn.onclick = () => handleBlockClick(id, val);
@@ -534,7 +688,6 @@
                 state.gridData.push({ id, val, selected: false, elem: btn });
             });
             
-            // Needs slight delay to draw lines if window resizes, though blocks are initially unselected.
             window.onresize = drawConnections;
         }
 
@@ -552,7 +705,6 @@
                 if (!el) continue;
                 
                 const rect = el.getBoundingClientRect();
-                // Calculate center relative to grid container
                 const x = rect.left - rectGrid.left + (rect.width / 2);
                 const y = rect.top - rectGrid.top + (rect.height / 2);
                 
@@ -565,7 +717,7 @@
 
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', d);
-            path.setAttribute('stroke', 'var(--neon-blue)');
+            path.setAttribute('stroke', '#00f3ff');
             path.setAttribute('stroke-width', '6');
             path.setAttribute('fill', 'none');
             path.setAttribute('stroke-linecap', 'round');
@@ -605,24 +757,36 @@
                 span.innerText = b.val;
                 display.appendChild(span);
             });
-            // Auto scroll to right
             display.scrollLeft = display.scrollWidth;
         }
 
         function checkBuildSequence() {
             const q = state.questions[state.qIdx];
-            const currentVals = state.buildBlocks.map(b => b.val).join(',');
+            const currentArr = state.buildBlocks.map(b => b.val);
             
-            const target1 = q.build.join(',');
-            const target2 = q.buildAlt ? q.buildAlt.join(',') : null;
+            const target1 = q.build;
+            const target2 = q.buildAlt;
             
-            let isCorrect = (currentVals === target1) || (target2 && currentVals === target2);
-            let isPrefix = target1.startsWith(currentVals) || (target2 && target2.startsWith(currentVals));
+            let isCorrect = currentArr.join(',') === target1.join(',') || 
+                            (target2 && currentArr.join(',') === target2.join(','));
+            
+            let isPrefix1 = true;
+            for(let i = 0; i < currentArr.length; i++) {
+                if(currentArr[i] !== target1[i]) isPrefix1 = false;
+            }
+            
+            let isPrefix2 = false;
+            if (target2) {
+                isPrefix2 = true;
+                for(let i = 0; i < currentArr.length; i++) {
+                    if(currentArr[i] !== target2[i]) isPrefix2 = false;
+                }
+            }
+
+            let isPrefix = isPrefix1 || isPrefix2;
 
             if (isCorrect) {
-                SFX.select(); // slightly higher pitch ideally
-                
-                // Display the solved expression text cleanly (e.g. 4 × 4)
+                SFX.select(); 
                 document.getElementById('solve-expression').innerText = state.buildBlocks.map(b=>b.val).join(' ');
                 
                 setTimeout(() => {
@@ -635,7 +799,6 @@
                 }, 300);
             } else if (!isPrefix) {
                 handleWrongBuild(q);
-                clearBuild();
             }
         }
 
@@ -658,23 +821,22 @@
             if (inputVal === '') return;
 
             const q = state.questions[state.qIdx];
-            const numAns = parseInt(inputVal, 10);
+            const numAns = parseFloat(inputVal); // Mendukung jawaban desimal seperti 0.5
 
             if (numAns === q.ans) {
                 handleCorrect();
             } else {
-                handleWrongAnswer(q);
+                handleWrong(q);
             }
         }
 
         function handleCorrect() {
+            stopTimer(); 
             SFX.blast();
             
-            document.getElementById('line-svg').innerHTML = ''; // Hide lines during blast
-            document.getElementById('solve-overlay').classList.add('hidden');
+            document.getElementById('line-svg').innerHTML = ''; 
             document.getElementById('solve-overlay').classList.remove('flex');
             
-            // Screen shake & BOOM Visuals
             const gameView = document.getElementById('view-game');
             gameView.classList.add('anim-shake');
             setTimeout(() => gameView.classList.remove('anim-shake'), 400);
@@ -690,13 +852,11 @@
             gameView.appendChild(boomText);
             setTimeout(() => boomText.remove(), 800);
             
-            // Block blast animation
             state.buildBlocks.forEach(b => {
                 const el = document.getElementById(b.id);
                 if (el) el.classList.add('block-blast');
             });
 
-            // Score & Combo calculation
             state.combo++;
             if (state.combo > state.maxCombo) state.maxCombo = state.combo;
             
@@ -715,14 +875,24 @@
         }
 
         function handleWrongBuild(q) {
+            stopTimer(); 
             SFX.wrong();
+            state.hearts--; 
             state.combo = 0;
             state.mistakes++;
             updateHUD();
-            showModal('Salah Susun', 'Susunan balok tidak membentuk soal yang diminta atau bentuk yang setara. Coba perhatikan lagi!', '🧱', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Coba Lagi</button>`);
+            
+            const restartFn = state.mode === 'time_challenge' ? "navTo('menu')" : "startStage(state.worldId, state.stageId)";
+            
+            if (state.hearts <= 0) {
+                showModal('GAME OVER', 'Nyawa habis karena salah menyusun jalur! Power Core gagal diselamatkan.', '💥', `<button onclick="closeModal(); ${restartFn};" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Kembali</button>`);
+            } else {
+                showModal('Jalur Salah!', 'Hati-hati! Memilih balok yang bukan bagian dari rumus akan mengurangi nyawamu.', '🧱', `<button onclick="closeModal(); clearBuild(); if(state.mode==='time_challenge') startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Ulang Susun</button>`);
+            }
         }
 
-        function handleWrongAnswer(q) {
+        function handleWrong(q) {
+            stopTimer(); 
             SFX.wrong();
             state.hearts--;
             state.combo = 0;
@@ -731,34 +901,35 @@
             
             document.getElementById('answer-input').value = '';
             
+            const restartFn = state.mode === 'time_challenge' ? "navTo('menu')" : "startStage(state.worldId, state.stageId)";
+
             if (state.hearts <= 0) {
-                showModal('GAME OVER', 'Kehabisan Nyawa! Power Core gagal diselamatkan.', '💥', `<button onclick="closeModal(); startStage(state.worldId, state.stageId);" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Ulang Stage</button>`);
+                showModal('GAME OVER', 'Kehabisan Nyawa! Power Core gagal diselamatkan.', '💥', `<button onclick="closeModal(); ${restartFn};" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Kembali</button>`);
             } else {
-                showModal('Hitungan Salah', `Jawabanmu kurang tepat. Coba hitung perlahan.\n\nHint: ${q.hint}`, '❌', `<button onclick="closeModal()" class="px-6 py-2 bg-yellow-600 rounded-lg text-white font-bold">Hitung Ulang</button>`);
+                showModal('Hitungan Salah', `Jawabanmu kurang tepat. Coba hitung perlahan.\n\nHint: ${q.hint}`, '❌', `<button onclick="closeModal(); if(state.mode==='time_challenge') startTimer();" class="px-6 py-2 bg-yellow-600 rounded-lg text-white font-bold">Hitung Ulang</button>`);
             }
         }
 
         function useHint() {
+            stopTimer(); 
             const q = state.questions[state.qIdx];
             let hintMsg = q.hint || "Ingat materi bilangan berpangkat!";
             if (state.phase === 'build') {
                 hintMsg = `Untuk Tahap A, susun balok sesuai soal. Kamu bisa menyusun persis seperti soal atau jabarkan (contoh: 2² jadi 2 × 2).`;
             }
             
-            state.score = Math.max(0, state.score - 20); // Penalty
+            state.score = Math.max(0, state.score - 20); 
             updateHUD();
-            showModal('Bantuan', hintMsg, '💡', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Mengerti</button>`);
+            showModal('Bantuan', hintMsg, '💡', `<button onclick="closeModal(); if(state.mode==='time_challenge') startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Mengerti</button>`);
         }
 
         function showStageClear() {
             SFX.win();
             
-            // Update Progression
-            if (state.stageId === state.unlockedStage) {
+            if (state.mode === 'normal' && state.stageId === state.unlockedStage) {
                 state.unlockedStage++;
             }
             
-            // Calculate Stars
             let stars = 1;
             if (state.mistakes === 0) stars = 3;
             else if (state.mistakes <= 2) stars = 2;
@@ -770,8 +941,46 @@
             
             navTo('result');
         }
+
+        function showModal(title, text, icon, buttonsHTML) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-buttons').innerHTML = buttonsHTML;
+            
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                overlay.classList.remove('flex');
+                overlay.classList.add('hidden');
+            }, 200);
+        }
+
+        function showInfo(text) {
+            showModal('Informasi', text, 'ℹ️', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">OK</button>`);
+        }
+
+        function confirmExit() {
+            stopTimer();
+            showModal('Keluar Stage?', 'Progres di stage ini akan hilang.', '⚠️', `
+                <button onclick="closeModal(); if(state.mode === 'time_challenge') startTimer();" class="px-4 py-2 bg-slate-600 rounded-lg text-white font-bold">Batal</button>
+                <button onclick="closeModal(); stopTimer(); navTo('map');" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">Keluar</button>
+            `);
+        }
         
-        // Prevent default input submission behaviors
         document.getElementById('answer-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 submitAnswer();
