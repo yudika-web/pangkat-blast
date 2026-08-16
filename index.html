@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Power Blast - Educational Match Puzzle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-green: #04f404;
+            --bg-dark: #0f172a;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            overflow: hidden;
+            touch-action: none; /* Prevent pull-to-refresh */
+        }
+        .font-pixel { font-family: 'VT323', monospace; }
+        
+        /* Utility Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .anim-float { animation: float 3s ease-in-out infinite; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-1deg); }
+            50% { transform: translateX(5px) rotate(1deg); }
+            75% { transform: translateX(-5px) rotate(-1deg); }
+        }
+        .anim-shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes pulse-neon {
+            0%, 100% { box-shadow: 0 0 10px var(--neon-blue); }
+            50% { box-shadow: 0 0 20px var(--neon-blue), 0 0 40px var(--neon-blue); }
+        }
+        .neon-border { border: 2px solid var(--neon-blue); animation: pulse-neon 2s infinite; }
+
+        /* Block Styles */
+        .block-base { 
+            border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; 
+            transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.5); user-select: none;
+            cursor: pointer;
+        }
+        .block-number { background: linear-gradient(135deg, #1e3a8a, #3b82f6); border-bottom: 4px solid #1e3a8a; }
+        .block-power { background: linear-gradient(135deg, #7e22ce, #d946ef); border-bottom: 4px solid #4c1d95; }
+        .block-operation { background: linear-gradient(135deg, #047857, #10b981); border-bottom: 4px solid #064e3b; }
+        
+        .block-selected { 
+            transform: scale(0.9); opacity: 0.8; border-bottom-width: 0px; margin-top: 4px; 
+            box-shadow: 0 0 15px var(--neon-blue); 
+        }
+        .block-blast {
+            animation: blast 0.4s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes blast {
+            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            50% { transform: scale(1.5); opacity: 0.8; filter: brightness(2); }
+            100% { transform: scale(0); opacity: 0; filter: brightness(1); }
+        }
+
+        /* BOOM & Shockwave Effects */
+        @keyframes shockwave {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; border-width: 15px; border-color: var(--neon-blue); }
+            100% { transform: translate(-50%, -50%) scale(5); opacity: 0; border-width: 1px; border-color: var(--neon-pink); }
+        }
+        .anim-shockwave {
+            position: absolute; top: 50%; left: 50%;
+            width: 100px; height: 100px; border-radius: 50%; border-style: solid;
+            animation: shockwave 0.6s ease-out forwards; pointer-events: none; z-index: 40;
+        }
+
+        @keyframes boom-text {
+            0% { transform: translate(-50%, -50%) scale(0.2) rotate(-15deg); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.5) rotate(5deg); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1.8) rotate(10deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2.5) rotate(15deg); opacity: 0; }
+        }
+        .anim-boom {
+            position: absolute; top: 50%; left: 50%;
+            font-family: 'VT323', monospace; font-size: 6rem; color: #fffb00;
+            text-shadow: 0 0 20px #ff00ea, 0 4px 0 #ff00ea;
+            animation: boom-text 0.8s ease-out forwards; pointer-events: none; z-index: 50;
+        }
+
+        /* Layout Views */
+        .view { display: none; width: 100vw; height: 100vh; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; background-color: var(--bg-dark); }
+        .active-view { display: flex; }
+        
+        /* Map nodes */
+        .map-node { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 4px solid #334155; background: #1e293b; color: white; transition: all 0.3s;}
+        .map-node.unlocked { border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); background: #2563eb; cursor: pointer; }
+        .map-node.completed { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); background: #059669; cursor: pointer; }
+        
+        .line-connector { width: 4px; height: 40px; background: #334155; margin: 5px 0; }
+        .line-connector.unlocked { background: var(--neon-blue); box-shadow: 0 0 8px var(--neon-blue); }
+    </style>
+</head>
+<body>
+
+    <!-- VIEW: MAIN MENU -->
+    <div id="view-menu" class="view active-view bg-[url('https://placehold.co/400x800/0f172a/0f172a')] bg-cover items-center justify-center p-6 relative">
+        <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
+        <div class="z-10 flex flex-col items-center w-full">
+            <h1 class="text-6xl font-pixel text-center text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 to-blue-600 drop-shadow-[0_0_10px_rgba(0,243,255,0.8)] mb-2 anim-float">
+                POWER<br>BLAST
+            </h1>
+            <p class="text-pink-400 font-bold mb-12 tracking-widest text-sm">MISI BILANGAN BERPANGKAT</p>
+            
+            <button onclick="navTo('map')" class="w-full max-w-xs py-4 mb-4 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl text-xl font-bold font-pixel neon-border hover:scale-105 transition-transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                <span>▶</span> MULAI
+            </button>
+            <button onclick="showInfo('Fitur Belajar akan segera hadir! Fokus selesaikan Stage 1 dulu ya.')" class="w-full max-w-xs py-3 mb-4 bg-slate-800 rounded-xl text-lg font-bold border-2 border-slate-600 hover:bg-slate-700 active:scale-95 transition-all">
+                📖 BELAJAR
+            </button>
+            <button onclick="showInfo('Prestasi: Belum ada piala. Mainkan gamenya!')" class="w-full max-w-xs py-3 mb-4 bg-slate-800 rounded-xl text-lg font-bold border-2 border-slate-600 hover:bg-slate-700 active:scale-95 transition-all">
+                🏆 PRESTASI
+            </button>
+            
+            <div class="mt-8 text-slate-500 text-xs text-center">v1.0.0 - ⚡ POWER MASTER ⚡</div>
+        </div>
+    </div>
+
+    <!-- VIEW: MAP -->
+    <div id="view-map" class="view bg-slate-900 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="navTo('menu')" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center border border-slate-600 active:bg-slate-700">
+                🏠
+            </button>
+            <h2 class="text-2xl font-pixel text-cyan-400 drop-shadow-[0_0_5px_#00f3ff]">WORLD MAP</h2>
+            <div class="w-10 h-10"></div> <!-- Spacer -->
+        </div>
+
+        <div class="flex-1 overflow-y-auto pb-10 flex flex-col items-center pt-8" id="map-container">
+            <!-- Map nodes generated by JS -->
+        </div>
+    </div>
+
+    <!-- VIEW: GAME -->
+    <div id="view-game" class="view bg-slate-900 flex-col">
+        <!-- HUD -->
+        <div class="bg-slate-800 p-3 flex justify-between items-center border-b border-slate-700 shadow-md z-30">
+            <div class="flex items-center gap-2">
+                <button onclick="confirmExit()" class="w-8 h-8 bg-slate-700 rounded flex items-center justify-center active:bg-slate-600">⏸️</button>
+                <div class="font-pixel text-xl text-cyan-300 ml-2" id="hud-stage">ST 1</div>
+            </div>
+            <div class="flex items-center gap-1 text-xl" id="hud-hearts">
+                ❤️ ❤️ ❤️
+            </div>
+        </div>
+        
+        <div class="flex justify-between px-4 py-1 text-sm bg-slate-850 z-30 font-pixel">
+            <div>SKOR: <span id="hud-score" class="text-yellow-400">0</span></div>
+            <div class="text-pink-400 font-bold" id="hud-combo">COMBO x0</div>
+        </div>
+
+        <!-- Build Expression Display -->
+        <div class="h-16 bg-slate-950 border-b-2 border-cyan-500/50 flex items-center justify-center px-4 overflow-x-auto whitespace-nowrap z-30" id="build-display">
+            <!-- Balok yang dipilih muncul di sini -->
+        </div>
+
+        <!-- Instruction Area -->
+        <div class="p-4 flex flex-col items-center justify-center shrink-0 min-h-[120px] bg-gradient-to-b from-slate-800 to-transparent z-30">
+            <div class="text-sm text-slate-400 mb-1 font-bold tracking-widest uppercase" id="game-phase-text">TAHAP A: SUSUN BALOK</div>
+            <div id="game-question" class="text-3xl font-bold text-center h-12 flex items-center justify-center text-white font-pixel">
+                Susun 4²
+            </div>
+        </div>
+
+        <!-- Build Area (Grid) -->
+        <div class="flex-1 p-4 flex items-center justify-center relative w-full overflow-hidden">
+            <!-- Grid Container with SVG Lines Layer -->
+            <div class="relative w-full max-w-[340px] aspect-square">
+                <!-- SVG layer for lines -->
+                <svg id="line-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style="overflow: visible; filter: drop-shadow(0 0 6px #00f3ff);"></svg>
+                
+                <!-- Blocks grid -->
+                <div id="block-grid" class="grid grid-cols-4 gap-3 w-full h-full relative z-10 p-2">
+                    <!-- Blocks generated via JS -->
+                </div>
+            </div>
+            
+            <!-- Overlay for solving phase -->
+            <div id="solve-overlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-30 hidden flex-col items-center justify-center p-6 transition-opacity">
+                <h3 class="text-3xl text-neon-blue font-pixel mb-6 drop-shadow-[0_0_10px_#00f3ff]">SEKARANG HITUNG!</h3>
+                <div id="solve-expression" class="text-4xl font-bold font-pixel mb-8 text-yellow-300">
+                    <!-- Expression to solve -->
+                </div>
+                <input type="number" id="answer-input" class="w-full max-w-[200px] h-16 text-center text-3xl font-bold bg-slate-800 border-2 border-slate-500 rounded-xl mb-6 text-white focus:outline-none focus:border-cyan-400" placeholder="?">
+                <div class="flex gap-4 w-full max-w-[300px]">
+                    <button onclick="clearBuild()" class="flex-1 py-3 bg-red-600 rounded-xl font-bold text-lg border-b-4 border-red-800 active:border-b-0 active:mt-4 transition-all">BATAL</button>
+                    <button onclick="submitAnswer()" class="flex-1 py-3 bg-green-600 rounded-xl font-bold text-lg border-b-4 border-green-800 active:border-b-0 active:mt-4 transition-all shadow-[0_0_15px_#04f404]">BLAST! 💥</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="p-4 flex gap-4 justify-between bg-slate-900 border-t border-slate-800 z-30">
+            <button onclick="useHint()" class="flex-1 py-3 bg-slate-700 rounded-xl text-yellow-300 font-bold flex items-center justify-center gap-2 active:bg-slate-600">
+                💡 HINT
+            </button>
+            <button onclick="clearBuild()" class="flex-1 py-3 bg-slate-700 rounded-xl text-white font-bold flex items-center justify-center gap-2 active:bg-slate-600">
+                🔄 RESET
+            </button>
+        </div>
+    </div>
+
+    <!-- VIEW: RESULT -->
+    <div id="view-result" class="view bg-slate-900 items-center justify-center p-6 text-center">
+        <h2 class="text-5xl font-pixel text-yellow-400 mb-2 drop-shadow-[0_0_10px_#facc15] anim-float">STAGE CLEAR!</h2>
+        <div class="text-4xl mb-6" id="result-stars">⭐ ⭐ ⭐</div>
+        
+        <div class="bg-slate-800 rounded-2xl p-6 w-full max-w-xs border border-slate-700 shadow-xl mb-8">
+            <div class="flex justify-between mb-2">
+                <span class="text-slate-400">Skor Total:</span>
+                <span class="font-bold text-cyan-300 text-xl" id="result-score">0</span>
+            </div>
+            <div class="flex justify-between mb-2">
+                <span class="text-slate-400">Max Combo:</span>
+                <span class="font-bold text-pink-400">x<span id="result-combo">0</span></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400">Kesalahan:</span>
+                <span class="font-bold text-red-400" id="result-mistakes">0</span>
+            </div>
+        </div>
+
+        <button onclick="navTo('map')" class="w-full max-w-xs py-4 mb-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl text-xl font-bold font-pixel shadow-[0_0_15px_#04f404] hover:scale-105 active:scale-95 transition-all">
+            LANJUTKAN 🗺️
+        </button>
+    </div>
+
+    <!-- CUSTOM MODALS -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/80 z-50 hidden flex-col items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-slate-800 border-2 border-slate-600 rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl transform scale-95 transition-transform" id="modal-content">
+            <div class="text-4xl mb-4" id="modal-icon">⚠️</div>
+            <h3 class="text-2xl font-pixel text-white mb-2" id="modal-title">Perhatian</h3>
+            <p class="text-slate-300 mb-6" id="modal-text">Pesan teks di sini.</p>
+            <div class="flex gap-3 justify-center" id="modal-buttons">
+                <!-- Buttons injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Data Definition (With Alternate Builds & Operators)
+        const gameData = {
+            worlds: [
+                {
+                    id: 1,
+                    name: "BASIC POWER",
+                    stages: [
+                        { id: 1, type: "normal", questions: [
+                            { q: "Nilai dari 3²", build: ["3", "²"], buildAlt: ["3", "×", "3"], ans: 9, hint: "Pangkat 2 artinya dikalikan dengan bilangan itu sendiri." },
+                            { q: "Nilai dari 2³", build: ["2", "³"], buildAlt: ["2", "×", "2", "×", "2"], ans: 8, hint: "Angka 2 dikalikan sebanyak 3 kali." },
+                            { q: "Nilai dari 4²", build: ["4", "²"], buildAlt: ["4", "×", "4"], ans: 16, hint: "Bisa disusun '4²' atau '4 × 4'." }
+                        ]},
+                        { id: 2, type: "normal", questions: [
+                            { q: "Hasil dari 5²", build: ["5", "²"], buildAlt: ["5", "×", "5"], ans: 25, hint: "5 dikali 5." },
+                            { q: "Nilai dari 10³", build: ["1", "0", "³"], buildAlt: ["10", "³"], ans: 1000, hint: "10 × 10 × 10." }, // Demonstrating multi-char block fallback
+                            { q: "Hasil dari 2⁴", build: ["2", "⁴"], buildAlt: ["2", "×", "2", "×", "2", "×", "2"], ans: 16, hint: "Kalikan 2 sebanyak 4 kali." }
+                        ]}
+                    ]
+                }
+            ]
+        };
+
+        // Synthesizer for SFX (No external assets)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const SFX = {
+            playTone: (freq, type, duration, vol=0.1) => {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            },
+            select: () => SFX.playTone(600, 'sine', 0.1, 0.1),
+            deselect: () => SFX.playTone(300, 'sine', 0.1, 0.1),
+            blast: () => {
+                SFX.playTone(150, 'square', 0.3, 0.2); // Explosion boom
+                setTimeout(() => SFX.playTone(800, 'sine', 0.4, 0.1), 100); // Shimmer
+            },
+            wrong: () => {
+                SFX.playTone(200, 'sawtooth', 0.2, 0.1);
+                setTimeout(() => SFX.playTone(150, 'sawtooth', 0.3, 0.1), 150);
+            },
+            win: () => {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    setTimeout(() => SFX.playTone(freq, 'square', 0.2, 0.1), i * 150);
+                });
+            }
+        };
+
+        // App State
+        let state = {
+            currentView: 'menu',
+            unlockedStage: 1,
+            score: 0,
+            
+            // Current gameplay state
+            worldId: 1,
+            stageId: 1,
+            questions: [],
+            qIdx: 0,
+            hearts: 3,
+            combo: 0,
+            maxCombo: 0,
+            mistakes: 0,
+            phase: 'build', // 'build' or 'solve'
+            gridData: [], // {id, val, selected, elem}
+            buildBlocks: [], // {id, val}
+        };
+
+        function navTo(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active-view'));
+            document.getElementById('view-' + viewId).classList.add('active-view');
+            state.currentView = viewId;
+            
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            if (viewId === 'map') {
+                renderMap();
+            }
+        }
+
+        // Custom Modal Logic
+        function showModal(title, text, icon, buttonsHTML) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal-buttons').innerHTML = buttonsHTML;
+            
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+            setTimeout(() => {
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-content');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                overlay.classList.remove('flex');
+                overlay.classList.add('hidden');
+            }, 200);
+        }
+
+        function showInfo(text) {
+            showModal('Informasi', text, 'ℹ️', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">OK</button>`);
+        }
+
+        function confirmExit() {
+            showModal('Keluar Stage?', 'Progres di stage ini akan hilang.', '⚠️', `
+                <button onclick="closeModal()" class="px-4 py-2 bg-slate-600 rounded-lg text-white font-bold">Batal</button>
+                <button onclick="closeModal(); navTo('map');" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">Keluar</button>
+            `);
+        }
+
+        function renderMap() {
+            const container = document.getElementById('map-container');
+            container.innerHTML = '';
+            
+            const w = gameData.worlds[0]; // Currently only 1 world mocked
+            
+            const title = document.createElement('div');
+            title.className = "text-xl font-bold text-slate-400 mb-4 tracking-widest text-center w-full";
+            title.innerText = `WORLD ${w.id}: ${w.name}`;
+            container.appendChild(title);
+
+            // Render nodes bottom to top visually (reverse order)
+            const stagesRev = [...w.stages].reverse();
+            
+            stagesRev.forEach((st, idx) => {
+                const node = document.createElement('div');
+                const isUnlocked = st.id <= state.unlockedStage;
+                const isCompleted = st.id < state.unlockedStage;
+                
+                node.className = `map-node ${isCompleted ? 'completed' : (isUnlocked ? 'unlocked' : '')}`;
+                node.innerText = isCompleted ? '⭐' : (isUnlocked ? st.id : '🔒');
+                
+                if (isUnlocked) {
+                    node.onclick = () => startStage(w.id, st.id);
+                }
+                
+                container.appendChild(node);
+                
+                // Add line connector except for last element (which is visually the top)
+                if (idx < stagesRev.length - 1) {
+                    const lineUnlocked = (st.id - 1) <= state.unlockedStage;
+                    const line = document.createElement('div');
+                    line.className = `line-connector ${lineUnlocked ? 'unlocked' : ''}`;
+                    container.appendChild(line);
+                }
+            });
+        }
+
+        function startStage(wId, sId) {
+            state.worldId = wId;
+            state.stageId = sId;
+            
+            const world = gameData.worlds.find(w => w.id === wId);
+            const stage = world.stages.find(s => s.id === sId);
+            
+            state.questions = [...stage.questions];
+            state.qIdx = 0;
+            state.hearts = 3;
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.mistakes = 0;
+            
+            document.getElementById('hud-stage').innerText = `ST ${sId}`;
+            updateHUD();
+            
+            navTo('game');
+            loadQuestion();
+        }
+
+        function updateHUD() {
+            let hStr = '';
+            for(let i=0; i<3; i++) hStr += (i < state.hearts) ? '❤️ ' : '🖤 ';
+            document.getElementById('hud-hearts').innerText = hStr;
+            
+            document.getElementById('hud-score').innerText = state.score;
+            document.getElementById('hud-combo').innerText = `COMBO x${state.combo}`;
+            
+            if (state.combo > 0) {
+                document.getElementById('hud-combo').classList.add('text-neon-pink');
+                document.getElementById('hud-combo').classList.remove('text-slate-500');
+            } else {
+                document.getElementById('hud-combo').classList.remove('text-neon-pink');
+                document.getElementById('hud-combo').classList.add('text-slate-500');
+            }
+        }
+
+        function loadQuestion() {
+            state.phase = 'build';
+            state.buildBlocks = [];
+            document.getElementById('solve-overlay').classList.add('hidden');
+            document.getElementById('solve-overlay').classList.remove('flex');
+            document.getElementById('game-phase-text').innerText = 'TAHAP A: SUSUN BALOK';
+            
+            const q = state.questions[state.qIdx];
+            document.getElementById('game-question').innerText = q.q;
+            
+            renderBuildDisplay();
+            
+            // Combine main build and alt build to ensure all necessary blocks are present
+            let requiredVals = [...q.build];
+            if (q.buildAlt) {
+                requiredVals = requiredVals.concat(q.buildAlt);
+            }
+            generateGrid(requiredVals);
+        }
+
+        function generateGrid(requiredVals) {
+            const grid = document.getElementById('block-grid');
+            grid.innerHTML = '';
+            document.getElementById('line-svg').innerHTML = ''; // Clear SVG lines
+            state.gridData = [];
+
+            // Math distractors including operators
+            const ops = ['×', '+', '-', '÷'];
+            const nums = ['2', '3', '4', '5', '10', '²', '³', '⁴', '⁻²'];
+            const pool = [...nums, ...ops];
+            
+            // Start with required blocks, then fill to 16
+            let finalBlocks = [...requiredVals];
+            while (finalBlocks.length < 16) {
+                finalBlocks.push(pool[Math.floor(Math.random() * pool.length)]);
+            }
+            
+            // Shuffle
+            finalBlocks.sort(() => Math.random() - 0.5);
+
+            finalBlocks.forEach((val, idx) => {
+                const id = 'block-' + idx;
+                const btn = document.createElement('div');
+                
+                let colorClass = 'block-number';
+                if (['²', '³', '⁴', '⁻²'].includes(val)) colorClass = 'block-power';
+                else if (ops.includes(val)) colorClass = 'block-operation';
+
+                btn.className = `block-base ${colorClass} text-4xl font-bold font-pixel`;
+                btn.innerText = val;
+                btn.id = id;
+                btn.onclick = () => handleBlockClick(id, val);
+                
+                grid.appendChild(btn);
+                state.gridData.push({ id, val, selected: false, elem: btn });
+            });
+            
+            // Needs slight delay to draw lines if window resizes, though blocks are initially unselected.
+            window.onresize = drawConnections;
+        }
+
+        function drawConnections() {
+            const svg = document.getElementById('line-svg');
+            svg.innerHTML = '';
+            if (state.buildBlocks.length < 2) return;
+
+            const gridContainer = document.getElementById('block-grid');
+            const rectGrid = gridContainer.getBoundingClientRect();
+
+            let d = '';
+            for (let i = 0; i < state.buildBlocks.length; i++) {
+                const el = document.getElementById(state.buildBlocks[i].id);
+                if (!el) continue;
+                
+                const rect = el.getBoundingClientRect();
+                // Calculate center relative to grid container
+                const x = rect.left - rectGrid.left + (rect.width / 2);
+                const y = rect.top - rectGrid.top + (rect.height / 2);
+                
+                if (i === 0) {
+                    d += `M ${x} ${y} `;
+                } else {
+                    d += `L ${x} ${y} `;
+                }
+            }
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('stroke', 'var(--neon-blue)');
+            path.setAttribute('stroke-width', '6');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            
+            svg.appendChild(path);
+        }
+
+        function handleBlockClick(id, val) {
+            if (state.phase !== 'build') return;
+            
+            const blockObj = state.gridData.find(b => b.id === id);
+            if (blockObj.selected) return;
+
+            SFX.select();
+            blockObj.selected = true;
+            blockObj.elem.classList.add('block-selected');
+            
+            state.buildBlocks.push({id, val});
+            renderBuildDisplay();
+            drawConnections();
+            
+            checkBuildSequence();
+        }
+
+        function renderBuildDisplay() {
+            const display = document.getElementById('build-display');
+            display.innerHTML = '';
+            if(state.buildBlocks.length === 0) {
+                display.innerHTML = '<span class="text-slate-500 font-pixel text-xl">Ketuk balok untuk menyusun...</span>';
+                return;
+            }
+            
+            state.buildBlocks.forEach(b => {
+                const span = document.createElement('span');
+                span.className = 'mx-1 px-3 py-1 bg-slate-700 rounded text-2xl text-white font-pixel border border-slate-500 shadow-[0_0_8px_#00f3ff] inline-block';
+                span.innerText = b.val;
+                display.appendChild(span);
+            });
+            // Auto scroll to right
+            display.scrollLeft = display.scrollWidth;
+        }
+
+        function checkBuildSequence() {
+            const q = state.questions[state.qIdx];
+            const currentVals = state.buildBlocks.map(b => b.val).join(',');
+            
+            const target1 = q.build.join(',');
+            const target2 = q.buildAlt ? q.buildAlt.join(',') : null;
+            
+            let isCorrect = (currentVals === target1) || (target2 && currentVals === target2);
+            let isPrefix = target1.startsWith(currentVals) || (target2 && target2.startsWith(currentVals));
+
+            if (isCorrect) {
+                SFX.select(); // slightly higher pitch ideally
+                
+                // Display the solved expression text cleanly (e.g. 4 × 4)
+                document.getElementById('solve-expression').innerText = state.buildBlocks.map(b=>b.val).join(' ');
+                
+                setTimeout(() => {
+                    state.phase = 'solve';
+                    document.getElementById('solve-overlay').classList.remove('hidden');
+                    document.getElementById('solve-overlay').classList.add('flex');
+                    document.getElementById('game-phase-text').innerText = 'TAHAP B: HITUNG HASILNYA';
+                    document.getElementById('answer-input').value = '';
+                    document.getElementById('answer-input').focus();
+                }, 300);
+            } else if (!isPrefix) {
+                handleWrongBuild(q);
+                clearBuild();
+            }
+        }
+
+        function clearBuild() {
+            if(state.phase !== 'build') return;
+            SFX.deselect();
+            state.buildBlocks = [];
+            state.gridData.forEach(b => {
+                b.selected = false;
+                b.elem.classList.remove('block-selected');
+            });
+            renderBuildDisplay();
+            document.getElementById('line-svg').innerHTML = ''; 
+        }
+
+        function submitAnswer() {
+            if (state.phase !== 'solve') return;
+            
+            const inputVal = document.getElementById('answer-input').value;
+            if (inputVal === '') return;
+
+            const q = state.questions[state.qIdx];
+            const numAns = parseInt(inputVal, 10);
+
+            if (numAns === q.ans) {
+                handleCorrect();
+            } else {
+                handleWrongAnswer(q);
+            }
+        }
+
+        function handleCorrect() {
+            SFX.blast();
+            
+            document.getElementById('line-svg').innerHTML = ''; // Hide lines during blast
+            document.getElementById('solve-overlay').classList.add('hidden');
+            document.getElementById('solve-overlay').classList.remove('flex');
+            
+            // Screen shake & BOOM Visuals
+            const gameView = document.getElementById('view-game');
+            gameView.classList.add('anim-shake');
+            setTimeout(() => gameView.classList.remove('anim-shake'), 400);
+
+            const shockwave = document.createElement('div');
+            shockwave.className = 'anim-shockwave';
+            gameView.appendChild(shockwave);
+            setTimeout(() => shockwave.remove(), 600);
+
+            const boomText = document.createElement('div');
+            boomText.className = 'anim-boom';
+            boomText.innerText = 'BOOM!';
+            gameView.appendChild(boomText);
+            setTimeout(() => boomText.remove(), 800);
+            
+            // Block blast animation
+            state.buildBlocks.forEach(b => {
+                const el = document.getElementById(b.id);
+                if (el) el.classList.add('block-blast');
+            });
+
+            // Score & Combo calculation
+            state.combo++;
+            if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+            
+            let points = 100 + (state.combo * 20);
+            state.score += points;
+            updateHUD();
+
+            setTimeout(() => {
+                state.qIdx++;
+                if (state.qIdx >= state.questions.length) {
+                    showStageClear();
+                } else {
+                    loadQuestion();
+                }
+            }, 1200);
+        }
+
+        function handleWrongBuild(q) {
+            SFX.wrong();
+            state.combo = 0;
+            state.mistakes++;
+            updateHUD();
+            showModal('Salah Susun', 'Susunan balok tidak membentuk soal yang diminta atau bentuk yang setara. Coba perhatikan lagi!', '🧱', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Coba Lagi</button>`);
+        }
+
+        function handleWrongAnswer(q) {
+            SFX.wrong();
+            state.hearts--;
+            state.combo = 0;
+            state.mistakes++;
+            updateHUD();
+            
+            document.getElementById('answer-input').value = '';
+            
+            if (state.hearts <= 0) {
+                showModal('GAME OVER', 'Kehabisan Nyawa! Power Core gagal diselamatkan.', '💥', `<button onclick="closeModal(); startStage(state.worldId, state.stageId);" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Ulang Stage</button>`);
+            } else {
+                showModal('Hitungan Salah', `Jawabanmu kurang tepat. Coba hitung perlahan.\n\nHint: ${q.hint}`, '❌', `<button onclick="closeModal()" class="px-6 py-2 bg-yellow-600 rounded-lg text-white font-bold">Hitung Ulang</button>`);
+            }
+        }
+
+        function useHint() {
+            const q = state.questions[state.qIdx];
+            let hintMsg = q.hint || "Ingat materi bilangan berpangkat!";
+            if (state.phase === 'build') {
+                hintMsg = `Untuk Tahap A, susun balok sesuai soal. Kamu bisa menyusun persis seperti soal atau jabarkan (contoh: 2² jadi 2 × 2).`;
+            }
+            
+            state.score = Math.max(0, state.score - 20); // Penalty
+            updateHUD();
+            showModal('Bantuan', hintMsg, '💡', `<button onclick="closeModal()" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Mengerti</button>`);
+        }
+
+        function showStageClear() {
+            SFX.win();
+            
+            // Update Progression
+            if (state.stageId === state.unlockedStage) {
+                state.unlockedStage++;
+            }
+            
+            // Calculate Stars
+            let stars = 1;
+            if (state.mistakes === 0) stars = 3;
+            else if (state.mistakes <= 2) stars = 2;
+            
+            document.getElementById('result-stars').innerText = '⭐'.repeat(stars) + '🖤'.repeat(3 - stars);
+            document.getElementById('result-score').innerText = state.score;
+            document.getElementById('result-combo').innerText = state.maxCombo;
+            document.getElementById('result-mistakes').innerText = state.mistakes;
+            
+            navTo('result');
+        }
+        
+        // Prevent default input submission behaviors
+        document.getElementById('answer-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+        
+    </script>
+</body>
+</html>
