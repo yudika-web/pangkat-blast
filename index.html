@@ -135,15 +135,72 @@
         }
         .powerup-btn:disabled { opacity: 0.35; filter: grayscale(1); cursor: not-allowed; }
 
-        .map-node-boss { width: 76px; height: 76px; font-size: 28px; }
-        .map-node-boss.unlocked { border-color: #ff6a00; box-shadow: 0 0 20px #ff6a00, 0 0 40px rgba(255,106,0,0.5); background: linear-gradient(135deg,#7c2d12,#dc2626); }
-        .map-node-boss.completed { border-color: #facc15; box-shadow: 0 0 20px #facc15; background: linear-gradient(135deg,#78350f,#f59e0b); }
+        .map-node-boss { width: 68px; height: 68px; font-size: 26px; }
+        .map-node-boss.unlocked { border-color: #ff6a00; box-shadow: 0 0 20px #ff6a00, 0 0 40px rgba(255,106,0,0.5); background: radial-gradient(circle at 35% 30%, #dc2626, #7c2d12 75%); }
+        .map-node-boss.completed { border-color: #facc15; box-shadow: 0 0 20px #facc15; background: radial-gradient(circle at 35% 30%, #f59e0b, #78350f 75%); }
 
         @keyframes arrowBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(6px); }
         }
         .map-arrow { animation: arrowBounce 0.8s ease-in-out infinite; text-align: center; font-size: 22px; color: var(--neon-blue); filter: drop-shadow(0 0 6px var(--neon-blue)); }
+
+        /* === WORLD MAP: world cards + winding stage path === */
+        .world-card {
+            width: 100%; max-width: 400px; margin: 0 auto 24px auto;
+            border-radius: 22px; padding: 16px 14px 22px 14px; position: relative;
+            background: linear-gradient(180deg, rgba(30,41,59,0.8), rgba(15,23,42,0.6));
+            border: 1px solid var(--accent, #00f3ff);
+            box-shadow: 0 10px 26px rgba(0,0,0,0.4), 0 0 22px var(--glow, rgba(0,243,255,0.3));
+            overflow: hidden;
+        }
+        .world-card::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(120% 55% at 50% -8%, var(--glow, rgba(0,243,255,0.18)), transparent 70%);
+        }
+        .world-card-header {
+            display: flex; align-items: center; gap: 12px;
+            padding-bottom: 12px; margin-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: relative; z-index: 1;
+        }
+        .world-icon {
+            width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            background: radial-gradient(circle at 35% 30%, var(--accent, #00f3ff), rgba(15,23,42,0.9) 75%);
+            border: 1px solid var(--accent, #00f3ff);
+            box-shadow: 0 0 14px var(--glow, rgba(0,243,255,0.5));
+        }
+        .world-card-title { font-family: 'VT323', monospace; font-size: 12px; letter-spacing: 3px; color: var(--accent, #00f3ff); opacity: 0.9; }
+        .world-card-name { font-family: 'VT323', monospace; font-size: 21px; color: white; line-height: 1.15; text-shadow: 0 0 8px var(--glow, rgba(0,243,255,0.6)); }
+        .world-progress {
+            margin-left: auto; font-family: 'VT323', monospace; font-size: 14px; color: #fde047;
+            background: rgba(0,0,0,0.35); border: 1px solid rgba(253,224,71,0.4);
+            padding: 4px 11px; border-radius: 999px; white-space: nowrap; flex-shrink: 0;
+        }
+        .world-path { position: relative; z-index: 1; padding: 4px 0 2px 0; }
+        .world-path-line {
+            position: absolute; left: 50%; top: 4px; bottom: 4px; width: 3px; transform: translateX(-50%);
+            background: linear-gradient(180deg, transparent, var(--accent, #00f3ff) 15%, var(--accent, #00f3ff) 85%, transparent);
+            opacity: 0.3; z-index: 0; border-radius: 2px;
+        }
+        .stage-row { display: flex; position: relative; z-index: 1; margin-bottom: 4px; }
+        .stage-row.align-start { justify-content: flex-start; padding-left: 6%; }
+        .stage-row.align-center { justify-content: center; }
+        .stage-row.align-end { justify-content: flex-end; padding-right: 6%; }
+        .current-caption {
+            margin-top: 5px; font-family: 'VT323', monospace; font-size: 12px; letter-spacing: 1px;
+            color: var(--accent, #00f3ff); text-shadow: 0 0 6px var(--glow, rgba(0,243,255,0.7));
+            animation: arrowBounce 1s ease-in-out infinite; white-space: nowrap; text-align: center;
+        }
+        @keyframes currentPulseRing {
+            0% { box-shadow: 0 0 0 0 var(--glow, rgba(0,243,255,0.55)); }
+            100% { box-shadow: 0 0 0 15px rgba(0,243,255,0); }
+        }
+        .map-node.current-target::after {
+            content: ''; position: absolute; inset: -3px; border-radius: 50%;
+            animation: currentPulseRing 1.5s ease-out infinite; pointer-events: none;
+        }
 
         .block-base { 
             border-radius: 8px;
@@ -204,6 +261,38 @@
             100% { transform: scale(0); opacity: 0; filter: brightness(1); }
         }
 
+        @keyframes blockFallIn {
+            0% { transform: translateY(-55px) scale(0.6); opacity: 0; }
+            60% { transform: translateY(6px) scale(1.08); opacity: 1; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .block-fall {
+            animation: blockFallIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+                       blockIdle 2.6s ease-in-out infinite 0.4s;
+        }
+
+        @keyframes hintGlow {
+            0%, 100% { box-shadow: 0 0 10px #fde047, inset 0 0 8px rgba(253,224,71,0.4); border-color: #fde047; }
+            50% { box-shadow: 0 0 28px #fde047, 0 0 44px rgba(253,224,71,0.6); border-color: #fde047; }
+        }
+        .block-hint { animation: hintGlow 0.6s ease-in-out infinite !important; }
+
+        @keyframes barShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        .power-bar-track {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(0, 243, 255, 0.35);
+        }
+        .power-bar-fill {
+            background: linear-gradient(90deg, #00f3ff, #ff00ea, #00f3ff);
+            background-size: 200% 100%;
+            animation: barShimmer 1.6s linear infinite;
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.7);
+        }
+
         .view { 
             display: none; 
             width: 100vw; 
@@ -220,9 +309,19 @@
         }
         .active-view { display: flex; }
         
-        .map-node { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 4px solid #334155; background: #1e293b; color: white; transition: all 0.3s;}
-        .map-node.unlocked { border-color: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); background: #2563eb; cursor: pointer; }
-        .map-node.completed { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); background: #059669; cursor: pointer; }
+        .map-node {
+            width: 56px; height: 56px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-family: 'VT323', monospace;
+            border: 3px solid #334155;
+            background: radial-gradient(circle at 35% 30%, #334155, #1e293b 75%);
+            color: white; transition: transform 0.2s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .map-node.unlocked { border-color: var(--accent, #00f3ff); box-shadow: 0 0 15px var(--accent, #00f3ff); cursor: pointer; }
+        .map-node.unlocked:active { transform: scale(0.92); }
+        .map-node.completed { border-color: #facc15; box-shadow: 0 0 15px #facc15; background: radial-gradient(circle at 35% 30%, #78350f, #1e293b 75%); cursor: pointer; }
+        .map-node.completed:active { transform: scale(0.92); }
         
         .line-connector { width: 4px; height: 40px; background: #334155; margin: 5px 0; }
         .line-connector.unlocked { background: var(--neon-blue); box-shadow: 0 0 8px var(--neon-blue); }
@@ -243,6 +342,8 @@
 
     <!-- Background music -->
     <audio id="bgm-audio" loop preload="auto" src="https://raw.githubusercontent.com/yudika-web/database/main/sergequadrado-robotic-loop-251861.mp3"></audio>
+    <audio id="sfx-blast-audio" preload="auto" src="https://raw.githubusercontent.com/yudika-web/database/main/soumages-ballon-pop-360885.mp3"></audio>
+    <audio id="sfx-combo-audio" preload="auto" src="https://raw.githubusercontent.com/yudika-web/database/main/freesound_community-medium-explosion-40472.mp3"></audio>
 
     <!-- VIEW: MAIN MENU -->
     <div id="view-menu" class="view active-view bg-[url('https://placehold.co/400x800/0f172a/0f172a')] bg-cover items-center justify-center p-6 relative">
@@ -306,7 +407,7 @@
             <div class="flex items-center gap-2">
                 <button onclick="confirmExit()" class="w-8 h-8 bg-slate-700 rounded flex items-center justify-center active:bg-slate-600">⏸️</button>
                 <div class="font-pixel text-xl text-cyan-300 ml-2" id="hud-stage">ST 1</div>
-                <div id="hud-timer" class="hidden ml-4 flex items-center gap-1">
+                <div id="hud-timer" class="ml-4 flex items-center gap-1">
                     <svg width="30" height="30" viewBox="0 0 34 34" style="transform: rotate(-90deg);">
                         <circle cx="17" cy="17" r="14" stroke="#334155" stroke-width="4" fill="none" />
                         <circle id="timer-ring" cx="17" cy="17" r="14" stroke="#facc15" stroke-width="4" fill="none" stroke-linecap="round" stroke-dasharray="88" stroke-dashoffset="0" style="transition: stroke-dashoffset 1s linear, stroke 0.3s;" />
@@ -345,31 +446,29 @@
             </button>
         </div>
 
-        <div class="h-12 bg-slate-950 border-b-2 border-cyan-500/50 flex items-center justify-center px-4 overflow-x-auto whitespace-nowrap z-30 shrink-0" id="build-display">
-            <!-- Balok yang dipilih muncul di sini -->
+        <!-- POWER BAR: fill this to clear the stage -->
+        <div class="px-4 pt-2 pb-1 bg-slate-950/60 z-30 shrink-0">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-[11px] font-pixel tracking-widest text-cyan-300">⚡ POWER BAR</span>
+                <span class="text-[11px] font-pixel text-slate-400" id="power-bar-label">0/0</span>
+            </div>
+            <div class="w-full h-3 rounded-full overflow-hidden power-bar-track">
+                <div id="power-bar-fill" class="power-bar-fill h-full rounded-full" style="width:0%"></div>
+            </div>
         </div>
 
-        <div id="question-box" class="p-2 flex flex-col items-center justify-center shrink-0 bg-gradient-to-b from-slate-800 to-transparent z-30 mx-2 mt-1" style="min-height: clamp(64px, 12vh, 108px);">
-            <div id="golden-badge" class="hidden text-yellow-300 font-pixel text-sm mb-1 tracking-widest animate-pulse">✨ SOAL EMAS! POIN x3 ✨</div>
-            <div class="text-xs text-slate-400 mb-1 font-bold tracking-widest uppercase" id="game-phase-text">TAHAP A: SUSUN BALOK</div>
-            <div id="game-question" class="text-2xl sm:text-3xl font-bold text-center h-10 flex items-center justify-center text-white font-pixel"></div>
+        <div id="question-box" class="p-2 flex flex-col items-center justify-center shrink-0 bg-gradient-to-b from-slate-800 to-transparent z-30 mx-2 mt-1" style="min-height: clamp(58px, 10vh, 90px);">
+            <div id="golden-badge" class="hidden text-yellow-300 font-pixel text-sm mb-1 tracking-widest animate-pulse">✨ TARGET EMAS! POIN x3 ✨</div>
+            <div class="text-[11px] text-slate-400 mb-0.5 font-bold tracking-widest uppercase">Pasangkan BASIS + PANGKAT = </div>
+            <div id="game-question" class="text-4xl sm:text-5xl font-bold text-center flex items-center justify-center text-white font-pixel drop-shadow-[0_0_10px_#00f3ff]">
+                <span id="target-value">0</span>
+            </div>
         </div>
 
         <div class="flex-1 p-2 flex items-center justify-center relative w-full overflow-hidden">
-            <div id="grid-wrapper" class="relative aspect-square rounded-2xl transition-all mx-auto" style="width: min(340px, 92vw, 40vh);">
-                <svg id="line-svg" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style="overflow: visible; filter: drop-shadow(0 0 6px #00f3ff);"></svg>
-                <div id="block-grid" class="grid grid-cols-4 gap-2 sm:gap-3 w-full h-full relative z-10 p-2">
+            <div id="grid-wrapper" class="relative rounded-2xl transition-all mx-auto" style="width: min(320px, 90vw, 44vh); aspect-ratio: 4 / 5;">
+                <div id="block-grid" class="grid grid-cols-4 grid-rows-5 gap-1.5 sm:gap-2 w-full h-full relative z-10 p-1.5">
                     <!-- Blocks generated via JS -->
-                </div>
-            </div>
-            
-            <div id="solve-overlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md z-30 hidden flex-col items-center justify-center p-4 transition-opacity overflow-y-auto">
-                <h3 class="text-2xl sm:text-3xl text-neon-blue font-pixel mb-3 drop-shadow-[0_0_10px_#00f3ff]">SEKARANG HITUNG!</h3>
-                <div id="solve-expression" class="text-3xl sm:text-4xl font-bold font-pixel mb-4 text-yellow-300"></div>
-                <input type="number" id="answer-input" class="w-full max-w-[200px] h-14 text-center text-3xl font-bold bg-slate-800 border-2 border-slate-500 rounded-xl mb-4 text-white focus:outline-none focus:border-cyan-400" placeholder="?">
-                <div class="flex gap-4 w-full max-w-[300px]">
-                    <button onclick="clearBuild()" class="flex-1 py-2.5 bg-red-600 rounded-xl font-bold text-lg border-b-4 border-red-800 active:border-b-0 active:mt-4 transition-all">BATAL</button>
-                    <button onclick="submitAnswer()" class="flex-1 py-2.5 bg-green-600 rounded-xl font-bold text-lg border-b-4 border-green-800 active:border-b-0 active:mt-4 transition-all shadow-[0_0_15px_#04f404]">BLAST! 💥</button>
                 </div>
             </div>
         </div>
@@ -378,8 +477,8 @@
             <button onclick="useHint()" class="flex-1 py-2.5 bg-slate-700 rounded-xl text-yellow-300 font-bold flex items-center justify-center gap-2 active:bg-slate-600">
                 💡 HINT
             </button>
-            <button onclick="clearBuild()" class="flex-1 py-2.5 bg-slate-700 rounded-xl text-white font-bold flex items-center justify-center gap-2 active:bg-slate-600">
-                🔄 RESET
+            <button onclick="shuffleGrid()" class="flex-1 py-2.5 bg-slate-700 rounded-xl text-white font-bold flex items-center justify-center gap-2 active:bg-slate-600">
+                🔀 ACAK
             </button>
         </div>
     </div>
@@ -443,133 +542,30 @@
     </div>
 
     <script>
+        // Setiap stage kini punya "kolam" basis & pangkat yang boleh muncul di grid,
+        // batas waktu, dan jumlah pasangan benar yang dibutuhkan untuk mengisi Power Bar.
+        function buildWorldStages(startId, bases, exps, baseTime, baseMatches) {
+            const stages = [];
+            for (let i = 0; i < 5; i++) {
+                const id = startId + i;
+                const isBoss = id % 5 === 0;
+                stages.push({
+                    id,
+                    bases, exps,
+                    timeLimit: Math.max(26, baseTime - i * 2 - (isBoss ? 3 : 0)),
+                    matchesNeeded: baseMatches + Math.floor(i / 2) + (isBoss ? 1 : 0)
+                });
+            }
+            return stages;
+        }
+
         const gameData = {
             worlds: [
-                {
-                    id: 1, name: "BASIC POWER",
-                    stages: [
-                        { id: 1, questions: [
-                            { q: "Nilai dari 2²", build: ["2", "²"], buildAlt: ["2", "×", "2"], ans: 4, hint: "2 dikalikan dengan dirinya sendiri." },
-                            { q: "Nilai dari 3²", build: ["3", "²"], buildAlt: ["3", "×", "3"], ans: 9, hint: "3 dikalikan 3." }
-                        ]},
-                        { id: 2, questions: [
-                            { q: "Nilai dari 2³", build: ["2", "³"], buildAlt: ["2", "×", "2", "×", "2"], ans: 8, hint: "2 dikalikan sebanyak 3 kali." },
-                            { q: "Nilai dari 4²", build: ["4", "²"], buildAlt: ["4", "×", "4"], ans: 16, hint: "4 dikalikan 4." }
-                        ]},
-                        { id: 3, questions: [
-                            { q: "Nilai dari 5²", build: ["5", "²"], buildAlt: ["5", "×", "5"], ans: 25, hint: "5 dikali 5." },
-                            { q: "Nilai dari 10²", build: ["10", "²"], buildAlt: ["10", "×", "10"], ans: 100, hint: "10 dikali 10." }
-                        ]},
-                        { id: 4, questions: [
-                            { q: "Nilai dari 3³", build: ["3", "³"], buildAlt: ["3", "×", "3", "×", "3"], ans: 27, hint: "3 kali 3 kali 3." },
-                            { q: "Nilai dari 2⁴", build: ["2", "⁴"], buildAlt: ["2", "×", "2", "×", "2", "×", "2"], ans: 16, hint: "Kalikan 2 sebanyak 4 kali." }
-                        ]},
-                        { id: 5, questions: [
-                            { q: "Nilai dari 5³", build: ["5", "³"], buildAlt: ["5", "×", "5", "×", "5"], ans: 125, hint: "5 kali 5 kali 5." },
-                            { q: "Nilai dari 10³", build: ["10", "³"], buildAlt: ["10", "×", "10", "×", "10"], ans: 1000, hint: "10 x 10 x 10." }
-                        ]}
-                    ]
-                },
-                {
-                    id: 2, name: "NEGATIVE ZONE",
-                    stages: [
-                        { id: 6, questions: [
-                            { q: "Nilai dari -2²", build: ["-", "2", "²"], buildAlt: ["-", "2", "×", "2"], ans: -4, hint: "Minus TIDAK ikut dipangkatkan jika tidak ada kurung." },
-                            { q: "Nilai dari -3²", build: ["-", "3", "²"], buildAlt: ["-", "3", "×", "3"], ans: -9, hint: "Tanda minus tetap di luar, yang dipangkatkan hanya angkanya." }
-                        ]},
-                        { id: 7, questions: [
-                            { q: "Nilai dari (-2)²", build: ["(", "-", "2", ")", "²"], buildAlt: ["(", "-", "2", ")", "×", "(", "-", "2", ")"], ans: 4, hint: "Minus IKUT dipangkatkan. Negatif kali negatif = positif." },
-                            { q: "Nilai dari (-3)²", build: ["(", "-", "3", ")", "²"], buildAlt: ["(", "-", "3", ")", "×", "(", "-", "3", ")"], ans: 9, hint: "Negatif × Negatif = Positif." }
-                        ]},
-                        { id: 8, questions: [
-                            { q: "Nilai dari (-2)³", build: ["(", "-", "2", ")", "³"], ans: -8, hint: "Negatif pangkat ganjil hasilnya tetap negatif." },
-                            { q: "Nilai dari -4²", build: ["-", "4", "²"], ans: -16, hint: "Tanpa kurung, minus tidak ikut dipangkatkan." }
-                        ]},
-                        { id: 9, questions: [
-                            { q: "Nilai dari (-5)²", build: ["(", "-", "5", ")", "²"], ans: 25, hint: "Pangkat genap, hasil positif." },
-                            { q: "Nilai dari -5²", build: ["-", "5", "²"], ans: -25, hint: "Tanpa kurung, hasil negatif." }
-                        ]},
-                        { id: 10, questions: [
-                            { q: "Nilai dari (-10)²", build: ["(", "-", "10", ")", "²"], ans: 100, hint: "(-10) x (-10)" },
-                            { q: "Nilai dari (-10)³", build: ["(", "-", "10", ")", "³"], ans: -1000, hint: "(-10) x (-10) x (-10)" }
-                        ]}
-                    ]
-                },
-                {
-                    id: 3, name: "ZERO GRAVITY",
-                    stages: [
-                        { id: 11, questions: [
-                            { q: "Nilai dari 5⁰", build: ["5", "⁰"], ans: 1, hint: "Bilangan berapapun (kecuali 0) dipangkatkan 0 hasilnya 1." },
-                            { q: "Nilai dari 10⁰", build: ["10", "⁰"], ans: 1, hint: "Aturan pangkat nol selalu bernilai 1." }
-                        ]},
-                        { id: 12, questions: [
-                            { q: "Nilai dari (-3)⁰", build: ["(", "-", "3", ")", "⁰"], ans: 1, hint: "Bahkan bilangan negatif pangkat 0 hasilnya 1." },
-                            { q: "Nilai dari -4⁰", build: ["-", "4", "⁰"], ans: -1, hint: "Hati-hati! Ini -(4⁰), bukan (-4)⁰." }
-                        ]},
-                        { id: 13, questions: [
-                            { q: "Nilai dari 2⁻¹", build: ["2", "⁻¹"], ans: 0.5, hint: "2 pangkat -1 sama dengan 1 dibagi 2 (0.5)." },
-                            { q: "Nilai dari 10⁻¹", build: ["10", "⁻¹"], ans: 0.1, hint: "1 dibagi 10 = 0.1" }
-                        ]},
-                        { id: 14, questions: [
-                            { q: "Nilai dari 2⁻²", build: ["2", "⁻²"], ans: 0.25, hint: "1 dibagi (2²), yaitu 1/4 atau 0.25." },
-                            { q: "Nilai dari 10⁻²", build: ["10", "⁻²"], ans: 0.01, hint: "1 dibagi 100 = 0.01" }
-                        ]},
-                        { id: 15, questions: [
-                            { q: "Hitung 2⁰ + 3⁰", build: ["2", "⁰", "+", "3", "⁰"], ans: 2, hint: "Keduanya bernilai 1. Jadi 1 + 1." },
-                            { q: "Hitung 10⁰ - 5⁰", build: ["10", "⁰", "-", "5", "⁰"], ans: 0, hint: "1 - 1" }
-                        ]}
-                    ]
-                },
-                {
-                    id: 4, name: "POWER BATTLE",
-                    stages: [
-                        { id: 16, questions: [
-                            { q: "Hitung 2² × 2³", build: ["2", "²", "×", "2", "³"], buildAlt: ["2", "⁵"], ans: 32, hint: "Basis sama dikali = Pangkat ditambah: 2^(2+3)" },
-                            { q: "Hitung 3² × 3", build: ["3", "²", "×", "3"], ans: 27, hint: "3 itu sama dengan 3¹. Pangkat ditambah: 2+1=3." }
-                        ]},
-                        { id: 17, questions: [
-                            { q: "Hitung 2⁵ ÷ 2³", build: ["2", "⁵", "÷", "2", "³"], buildAlt: ["2", "²"], ans: 4, hint: "Basis sama dibagi = Pangkat dikurang: 2^(5-3)" },
-                            { q: "Hitung 10³ ÷ 10", build: ["10", "³", "÷", "10"], buildAlt: ["10", "²"], ans: 100, hint: "10^(3-1) = 10²" }
-                        ]},
-                        { id: 18, questions: [
-                            { q: "Hitung 2³ + 2²", build: ["2", "³", "+", "2", "²"], ans: 12, hint: "Penjumlahan TIDAK BISA digabung pangkatnya. Hitung manual: 8 + 4" },
-                            { q: "Hitung 3² - 2³", build: ["3", "²", "-", "2", "³"], ans: 1, hint: "Hitung manual: 9 - 8" }
-                        ]},
-                        { id: 19, questions: [
-                            { q: "Nilai (2²)³", build: ["(", "2", "²", ")", "³"], buildAlt: ["2", "⁶"], ans: 64, hint: "Pangkat dipangkatkan = Pangkat dikali: 2^(2×3)" },
-                            { q: "Nilai (10²)²", build: ["(", "10", "²", ")", "²"], buildAlt: ["10", "⁴"], ans: 10000, hint: "10^(2×2) = 10⁴" }
-                        ]},
-                        { id: 20, questions: [
-                            { q: "Hitung (2³ × 2) ÷ 2²", build: ["(", "2", "³", "×", "2", ")", "÷", "2", "²"], buildAlt: ["2", "²"], ans: 4, hint: "Selesaikan dalam kurung dulu: 2⁴ ÷ 2²" },
-                            { q: "Hitung 5² × 5⁰", build: ["5", "²", "×", "5", "⁰"], ans: 25, hint: "5² × 1 = 25" }
-                        ]}
-                    ]
-                },
-                {
-                    id: 5, name: "FINAL EXAM",
-                    stages: [
-                        { id: 21, questions: [
-                            { q: "Hitung 10² ÷ 5²", build: ["10", "²", "÷", "5", "²"], ans: 4, hint: "Hitung nilai masing-masing: 100 ÷ 25" },
-                            { q: "Hitung 2³ × 5³", build: ["2", "³", "×", "5", "³"], ans: 1000, hint: "Bisa juga dihitung (2×5)³ = 10³" }
-                        ]},
-                        { id: 22, questions: [
-                            { q: "Nilai (-2)² + 2²", build: ["(", "-", "2", ")", "²", "+", "2", "²"], ans: 8, hint: "4 + 4" },
-                            { q: "Nilai -3² + (-3)²", build: ["-", "3", "²", "+", "(", "-", "3", ")", "²"], ans: 0, hint: "-9 + 9" }
-                        ]},
-                        { id: 23, questions: [
-                            { q: "Hitung 2⁻¹ + 2⁻¹", build: ["2", "⁻¹", "+", "2", "⁻¹"], ans: 1, hint: "0.5 + 0.5 atau 1/2 + 1/2" },
-                            { q: "Hitung 10⁰ - 10⁻¹", build: ["10", "⁰", "-", "10", "⁻¹"], ans: 0.9, hint: "1 - 0.1" }
-                        ]},
-                        { id: 24, questions: [
-                            { q: "Nilai ((2²)²)⁰", build: ["(", "(", "2", "²", ")", "²", ")", "⁰"], ans: 1, hint: "Semuanya dipangkatkan 0, hasilnya pasti 1." },
-                            { q: "Hitung (5³ ÷ 5²)²", build: ["(", "5", "³", "÷", "5", "²", ")", "²"], buildAlt: ["5", "²"], ans: 25, hint: "Di dalam kurung hasilnya 5¹, lalu dipangkatkan 2." }
-                        ]},
-                        { id: 25, questions: [
-                            { q: "Boss: (2³ × 2²) ÷ 2⁴", build: ["(", "2", "³", "×", "2", "²", ")", "÷", "2", "⁴"], buildAlt: ["2", "¹"], ans: 2, hint: "2^(3+2-4) = 2¹" },
-                            { q: "Boss: 4² - 2³ × 2", build: ["4", "²", "-", "2", "³", "×", "2"], ans: 0, hint: "16 - (8 × 2) = 16 - 16. Kali dihitung duluan!" }
-                        ]}
-                    ]
-                }
+                { id: 1, name: "BASIC POWER", stages: buildWorldStages(1, [2, 3, 4, 5], ['²', '³'], 55, 4) },
+                { id: 2, name: "NEGATIVE ZONE", stages: buildWorldStages(6, [2, 3, 4, 5, 10], ['²', '³', '⁻¹'], 52, 5) },
+                { id: 3, name: "ZERO GRAVITY", stages: buildWorldStages(11, [2, 3, 4, 5, 6, 10], ['⁰', '²', '³', '⁻¹', '⁻²'], 49, 5) },
+                { id: 4, name: "POWER BATTLE", stages: buildWorldStages(16, [2, 3, 4, 5, 6, 7, 8, 9], ['²', '³', '⁴'], 45, 6) },
+                { id: 5, name: "FINAL EXAM", stages: buildWorldStages(21, [2, 3, 4, 5, 6, 7, 8, 9, 10], ['²', '³', '⁴', '⁰', '⁻¹'], 40, 7) }
             ]
         };
 
@@ -604,6 +600,20 @@
                 });
             }
         };
+
+        // Efek suara balok pecah (file audio) - pakai clone agar bisa tumpang tindih saat combo cepat
+        function playSfxFile(elId, vol) {
+            const src = document.getElementById(elId);
+            if (!src) return;
+            try {
+                const node = src.cloneNode(true);
+                node.volume = vol !== undefined ? vol : 0.7;
+                node.play().catch(() => {});
+                node.addEventListener('ended', () => node.remove());
+            } catch (e) {}
+        }
+        function playBlastSfx() { playSfxFile('sfx-blast-audio', 0.6); }
+        function playComboBlastSfx() { playSfxFile('sfx-combo-audio', 0.75); }
 
         // Background Music
         const bgm = document.getElementById('bgm-audio');
@@ -647,16 +657,18 @@
             mode: 'normal',
             worldId: 1,
             stageId: 1,
-            questions: [],
-            qIdx: 0,
             hearts: 3,
             combo: 0,
             maxCombo: 0,
             mistakes: 0,
-            phase: 'build', 
-            gridData: [], 
-            buildBlocks: [],
+            grid: [],
+            selected: [],
+            targetValue: 0,
+            currentStageConfig: null,
+            matchesNeeded: 4,
+            matchesDone: 0,
             timeLeft: 10,
+            currentTimeLimit: 10,
             timerInterval: null,
             coins: 0,
             powerups: { freeze: 0, shield: 0, fifty: 0 },
@@ -665,11 +677,13 @@
             isGolden: false,
             bestScores: {},
             survivalWave: 1,
-            survivalTimeLimit: 12,
             survivalBest: 0
         };
 
         function navTo(viewId) {
+            if (state.currentView === 'game' && viewId !== 'game') {
+                stopTimer();
+            }
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active-view', 'view-fade-enter'));
             const target = document.getElementById('view-' + viewId);
             target.classList.add('active-view', 'view-fade-enter');
@@ -685,6 +699,15 @@
             }
         }
 
+        const WORLD_THEMES = [
+            { accent: '#00f3ff', glow: 'rgba(0,243,255,0.4)', icon: '⚡' },
+            { accent: '#ff00ea', glow: 'rgba(255,0,234,0.4)', icon: '🌀' },
+            { accent: '#a3e635', glow: 'rgba(163,230,53,0.4)', icon: '🌌' },
+            { accent: '#facc15', glow: 'rgba(250,204,21,0.4)', icon: '⚔️' },
+            { accent: '#fb7185', glow: 'rgba(251,113,133,0.4)', icon: '🏆' }
+        ];
+        const ZIGZAG = ['align-start', 'align-center', 'align-end', 'align-center', 'align-start'];
+
         function renderMap() {
             const container = document.getElementById('map-container');
             container.innerHTML = '';
@@ -692,13 +715,34 @@
             let worldsReversed = [...gameData.worlds].reverse();
             
             worldsReversed.forEach((world) => {
-                const wTitle = document.createElement('div');
-                wTitle.className = 'text-2xl font-pixel text-pink-400 my-6 drop-shadow-[0_0_5px_#ff00ea] text-center w-full';
-                wTitle.innerText = `WORLD ${world.id}\n${world.name}`;
-                container.appendChild(wTitle);
+                const theme = WORLD_THEMES[(world.id - 1) % WORLD_THEMES.length];
+                const completedCount = world.stages.filter(s => s.id < state.unlockedStage).length;
+                const totalCount = world.stages.length;
+                const isWorldDone = completedCount === totalCount;
+
+                const card = document.createElement('div');
+                card.className = 'world-card pop-in';
+                card.style.setProperty('--accent', theme.accent);
+                card.style.setProperty('--glow', theme.glow);
+
+                const header = document.createElement('div');
+                header.className = 'world-card-header';
+                header.innerHTML = `
+                    <div class="world-icon">${theme.icon}</div>
+                    <div>
+                        <div class="world-card-title">WORLD ${world.id}</div>
+                        <div class="world-card-name">${world.name}</div>
+                    </div>
+                    <div class="world-progress">${isWorldDone ? '👑 SELESAI' : `${completedCount}/${totalCount} ⭐`}</div>
+                `;
+                card.appendChild(header);
+
+                const path = document.createElement('div');
+                path.className = 'world-path';
+                path.innerHTML = '<div class="world-path-line"></div>';
 
                 let stagesReversed = [...world.stages].reverse();
-                
+
                 stagesReversed.forEach((stage, idx) => {
                     const globalStageId = stage.id;
                     const isUnlocked = globalStageId <= state.unlockedStage;
@@ -706,10 +750,16 @@
                     const isBoss = stage.id % 5 === 0;
                     const isCurrent = isUnlocked && !isCompleted;
 
+                    const row = document.createElement('div');
+                    row.className = `stage-row ${ZIGZAG[idx % ZIGZAG.length]}`;
+
+                    const nodeWrap = document.createElement('div');
+                    nodeWrap.className = 'flex flex-col items-center';
+
                     const node = document.createElement('div');
-                    node.className = `map-node ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''} ${isBoss ? 'map-node-boss' : ''} pop-in relative z-10 mx-auto`;
-                    node.style.animationDelay = (idx * 45) + 'ms';
-                    
+                    node.className = `map-node ${isUnlocked ? 'unlocked' : ''} ${isCompleted ? 'completed' : ''} ${isBoss ? 'map-node-boss' : ''} ${isCurrent ? 'current-target' : ''} pop-in`;
+                    node.style.animationDelay = (idx * 60) + 'ms';
+
                     if (isCompleted) {
                         node.innerHTML = isBoss ? '👑' : '⭐';
                         node.onclick = () => startStage(world.id, stage.id);
@@ -719,34 +769,31 @@
                     } else {
                         node.innerHTML = '🔒';
                     }
+                    nodeWrap.appendChild(node);
 
                     if (isCurrent) {
-                        const arrow = document.createElement('div');
-                        arrow.className = 'map-arrow';
-                        arrow.innerText = '▼';
-                        container.appendChild(arrow);
+                        const caption = document.createElement('div');
+                        caption.className = 'current-caption';
+                        caption.innerHTML = `▶ MULAI &nbsp;·&nbsp; ⏱️${stage.timeLimit}s &nbsp;·&nbsp; 🎯${stage.matchesNeeded}x`;
+                        nodeWrap.appendChild(caption);
                     }
-                    
-                    container.appendChild(node);
-                    
-                    if (!(world.id === 1 && stage.id === 1)) {
-                        const line = document.createElement('div');
-                        const prevStageCompleted = (globalStageId - 1) < state.unlockedStage; 
-                        line.className = `line-connector ${prevStageCompleted ? 'unlocked' : ''} z-0 mx-auto`;
-                        container.appendChild(line);
-                    }
+
+                    row.appendChild(nodeWrap);
+                    path.appendChild(row);
                 });
+
+                card.appendChild(path);
+                container.appendChild(card);
             });
 
             setTimeout(() => {
-                const unlockedNode = document.querySelector('.map-node.unlocked:not(.completed)');
-                if(unlockedNode) unlockedNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+                const currentNode = document.querySelector('.map-node.current-target');
+                if (currentNode) currentNode.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 150);
         }
 
         function startStage(wId, sId) {
             state.mode = 'normal';
-            document.getElementById('hud-timer').classList.add('hidden');
             stopTimer();
             
             state.worldId = wId;
@@ -755,19 +802,21 @@
             const world = gameData.worlds.find(w => w.id === wId);
             const stage = world.stages.find(s => s.id === sId);
             
-            state.questions = [...stage.questions];
-            state.qIdx = 0;
+            state.score = 0;
             state.hearts = 3;
             state.combo = 0;
             state.maxCombo = 0;
             state.mistakes = 0;
             state.shieldActive = false;
+            state.currentTimeLimit = stage.timeLimit;
+            state.timeLeft = stage.timeLimit;
             
             document.getElementById('hud-stage').innerText = `ST ${sId}`;
             updateHUD();
             
             navTo('game');
-            loadQuestion();
+            initRound(stage);
+            startTimer();
         }
 
         function startTimeChallenge() {
@@ -779,21 +828,26 @@
             state.mistakes = 0;
             state.shieldActive = false;
             
-            state.questions = [];
-            gameData.worlds.forEach(w => {
-                w.stages.forEach(s => {
-                    state.questions = state.questions.concat(s.questions);
-                });
-            });
-            state.questions.sort(() => Math.random() - 0.5);
-            state.qIdx = 0;
+            const config = { bases: [2, 3, 4, 5, 6, 7, 8, 9, 10], exps: ['²', '³', '⁴', '⁰', '⁻¹'], matchesNeeded: 5, timeLimit: 60 };
+            state.currentTimeLimit = 90;
+            state.timeLeft = config.timeLimit;
             
             document.getElementById('hud-stage').innerText = `TIME ATK`;
-            document.getElementById('hud-timer').classList.remove('hidden');
             
             updateHUD();
             navTo('game');
-            loadQuestion();
+            initRound(config);
+            startTimer();
+        }
+
+        const SURVIVAL_BASES = [2, 3, 4, 5, 6, 7];
+        const SURVIVAL_EXPS = ['²', '³', '⁻¹'];
+        function survivalWaveConfig(wave) {
+            return {
+                bases: SURVIVAL_BASES, exps: SURVIVAL_EXPS,
+                matchesNeeded: 3 + Math.floor(wave / 2),
+                timeLimit: Math.max(8, 16 - Math.floor(wave / 2))
+            };
         }
 
         function startSurvival() {
@@ -805,36 +859,42 @@
             state.mistakes = 0;
             state.shieldActive = false;
             state.survivalWave = 1;
-            state.survivalTimeLimit = 12;
             
-            state.questions = [];
-            gameData.worlds.forEach(w => {
-                w.stages.forEach(s => {
-                    state.questions = state.questions.concat(s.questions);
-                });
-            });
-            state.questions.sort(() => Math.random() - 0.5);
-            state.qIdx = 0;
+            const config = survivalWaveConfig(1);
+            state.currentTimeLimit = config.timeLimit;
+            state.timeLeft = config.timeLimit;
             
             document.getElementById('hud-stage').innerText = `WAVE 1`;
-            document.getElementById('hud-timer').classList.remove('hidden');
             
             updateHUD();
             navTo('game');
-            loadQuestion();
+            initRound(config);
+            startTimer();
+        }
+
+        function nextSurvivalWave() {
+            state.survivalWave++;
+            const config = survivalWaveConfig(state.survivalWave);
+            state.currentStageConfig = config;
+            state.currentTimeLimit = config.timeLimit;
+            state.timeLeft = config.timeLimit;
+            state.matchesNeeded = config.matchesNeeded;
+            state.matchesDone = 0;
+            document.getElementById('hud-stage').innerText = `WAVE ${state.survivalWave}`;
+            updateBarDisplay();
+            pickNewTarget();
+            startTimer();
         }
 
         function startTimer() {
-            if (state.mode !== 'time_challenge' && state.mode !== 'survival') return;
             clearInterval(state.timerInterval);
-            state.timeLeft = state.mode === 'survival' ? state.survivalTimeLimit : 10;
             updateTimerDisplay();
             
             state.timerInterval = setInterval(() => {
                 state.timeLeft--;
                 updateTimerDisplay();
                 if (state.timeLeft <= 0) {
-                    handleTimeout();
+                    handleTimeUp();
                 }
             }, 1000);
         }
@@ -846,15 +906,14 @@
         function updateTimerDisplay() {
             const timerText = document.getElementById('timer-text');
             const ring = document.getElementById('timer-ring');
-            const total = state.mode === 'survival' ? state.survivalTimeLimit : 10;
+            const total = state.currentTimeLimit || 10;
             const circumference = 88;
             
-            timerText.innerText = `${state.timeLeft}s`;
+            timerText.innerText = `${Math.max(0, state.timeLeft)}s`;
             const ratio = Math.max(0, Math.min(1, state.timeLeft / total));
             ring.style.strokeDashoffset = String(circumference * (1 - ratio));
             
-            const timerEl = document.getElementById('hud-timer');
-            if (state.timeLeft <= 3) {
+            if (state.timeLeft <= 5) {
                 timerText.classList.add('text-red-500', 'anim-shake');
                 timerText.classList.remove('text-yellow-400');
                 ring.setAttribute('stroke', '#ef4444');
@@ -865,7 +924,7 @@
             }
         }
 
-        function handleTimeout() {
+        function handleTimeUp() {
             stopTimer();
             
             if (state.shieldActive) {
@@ -873,7 +932,13 @@
                 SFX.deselect();
                 state.combo = 0;
                 updateHUD();
-                showModal('Shield Melindungi!', 'Waktu habis, tapi Shield menahan kesalahan. Nyawa aman!', '🛡️', `<button onclick="closeModal(); clearBuild(); startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
+                const cont = state.mode === 'survival' ? `nextSurvivalWave();` : `state.timeLeft = state.currentTimeLimit; startTimer();`;
+                showModal('Shield Melindungi!', 'Waktu habis, tapi Shield menahan kesalahan. Power Bar aman!', '🛡️', `<button onclick="closeModal(); ${cont}" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
+                return;
+            }
+            
+            if (state.mode === 'time_challenge') {
+                endEndlessMode('⏰ Waktu Time Challenge habis!');
                 return;
             }
             
@@ -883,23 +948,36 @@
             state.mistakes++;
             updateHUD();
             
-            clearBuild();
-            document.getElementById('solve-overlay').classList.add('hidden');
-            document.getElementById('solve-overlay').classList.remove('flex');
-            
             if (state.hearts <= 0) {
-                showModal('GAME OVER', buildGameOverMessage('Waktu habis dan nyawamu kosong!'), '⏰', `<button onclick="closeModal(); navTo('menu');" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Ke Menu</button>`);
+                if (state.mode === 'survival') {
+                    endEndlessMode('💥 Nyawa habis di Survival!');
+                } else {
+                    showModal('GAME OVER', 'Waktu habis dan nyawamu kosong! Power Core gagal diselamatkan.', '⏰', `<button onclick="closeModal(); navTo('map');" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Kembali</button>`);
+                }
+                return;
+            }
+            
+            if (state.mode === 'survival') {
+                showModal('WAKTU HABIS!', 'Nyawa berkurang 1! Bersiap ke wave berikutnya.', '⏰', `<button onclick="closeModal(); nextSurvivalWave();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
             } else {
-                showModal('WAKTU HABIS!', 'Kamu terlalu lama berpikir. Nyawa dikurangi 1. Siap untuk mencoba lagi?', '⏰', `<button onclick="closeModal(); startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
+                showModal('WAKTU HABIS!', `Nyawa berkurang 1, tapi Power Bar tetap aman di ${state.matchesDone}/${state.matchesNeeded}!`, '⏰', `<button onclick="closeModal(); state.timeLeft = state.currentTimeLimit; startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
             }
         }
 
-        function buildGameOverMessage(baseMsg) {
-            if (state.mode === 'survival') {
-                if (state.score > state.survivalBest) state.survivalBest = state.score;
-                return `${baseMsg}\n\nSkor Survival: ${state.score} (Rekor: ${state.survivalBest})`;
+        function endEndlessMode(msg) {
+            stopTimer();
+            if (state.mode === 'survival' && state.score > state.survivalBest) {
+                state.survivalBest = state.score;
             }
-            return baseMsg;
+            const detail = state.mode === 'survival'
+                ? `Wave dicapai: ${state.survivalWave}\nSkor: ${state.score} (Rekor: ${state.survivalBest})`
+                : `Skor Akhir: ${state.score}\nMax Combo: x${state.maxCombo}`;
+            showModal(
+                state.mode === 'survival' ? 'SURVIVAL BERAKHIR' : 'TIME CHALLENGE SELESAI',
+                `${msg}\n\n${detail}`,
+                state.mode === 'survival' ? '🌀' : '⏰',
+                `<button onclick="closeModal(); navTo('menu');" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Ke Menu</button>`
+            );
         }
 
         function updateHUD() {
@@ -966,289 +1044,335 @@
             });
         }
 
-        function loadQuestion() {
-            state.phase = 'build';
-            state.buildBlocks = [];
-            document.getElementById('solve-overlay').classList.add('hidden');
-            document.getElementById('solve-overlay').classList.remove('flex');
-            document.getElementById('game-phase-text').innerText = 'TAHAP A: SUSUN BALOK';
-            
-            const q = state.questions[state.qIdx];
-            document.getElementById('game-question').innerText = q.q;
+        // === PAIR-MATCHING ENGINE ===
+        // Setiap blok adalah 'base' (angka biasa) atau 'exp' (simbol pangkat kecil).
+        // Pemain memasangkan 1 blok base + 1 blok exp yang hasilnya = target di atas.
+        const EXP_VALUE = { '⁰': 0, '²': 2, '³': 3, '⁴': 4, '⁵': 5, '⁻¹': -1, '⁻²': -2 };
+        const GRID_COLS = 4, GRID_ROWS = 5;
 
+        function computeValue(base, expSym) {
+            const val = Math.pow(base, EXP_VALUE[expSym]);
+            return Math.round(val * 10000) / 10000;
+        }
+
+        function isCleanCombo(base, expSym) {
+            const exp = EXP_VALUE[expSym];
+            if (exp >= 0) return true;
+            if (exp === -1) return [2, 4, 5, 10].includes(base);
+            if (exp === -2) return [2, 5, 10].includes(base);
+            return false;
+        }
+
+        function isValidPair(baseCell, expCell, target) {
+            const base = parseFloat(baseCell.val);
+            const val = computeValue(base, expCell.val);
+            return Math.abs(val - target) < 0.0005;
+        }
+
+        const SUP_DIGITS = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
+        const SUB_DIGITS = { '0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉' };
+        function toSuperscript(n) { return String(n).split('').map(d => SUP_DIGITS[d] || d).join(''); }
+        function toSubscript(n) { return String(n).split('').map(d => SUB_DIGITS[d] || d).join(''); }
+
+        function fmtVal(v) {
+            const r = Math.round(v * 10000) / 10000;
+            if (Number.isInteger(r)) return String(r);
+            // Nilai pecahan (hasil pangkat negatif) selalu berbentuk 1/n -> tampilkan sebagai pecahan, bukan desimal
+            const denom = Math.round(1 / r);
+            return toSuperscript(1) + '⁄' + toSubscript(denom);
+        }
+
+        function initRound(stageConfig) {
+            state.currentStageConfig = stageConfig;
+            state.matchesNeeded = stageConfig.matchesNeeded;
+            state.matchesDone = 0;
+            state.selected = [];
+            buildGrid(stageConfig);
+            renderGrid();
+            pickNewTarget();
+            updateBarDisplay();
+        }
+
+        function buildGrid(stageConfig) {
+            state.grid = [];
+            for (let r = 0; r < GRID_ROWS; r++) {
+                for (let c = 0; c < GRID_COLS; c++) {
+                    const idx = r * GRID_COLS + c;
+                    const type = Math.random() < 0.45 ? 'exp' : 'base';
+                    const val = type === 'exp'
+                        ? stageConfig.exps[Math.floor(Math.random() * stageConfig.exps.length)]
+                        : String(stageConfig.bases[Math.floor(Math.random() * stageConfig.bases.length)]);
+                    state.grid.push({ id: 'cell-' + idx, row: r, col: c, type, val, selected: false, removed: false, elem: null });
+                }
+            }
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('block-grid');
+            gridEl.innerHTML = '';
+            state.grid.forEach((cell, i) => {
+                const btn = document.createElement('div');
+                btn.id = cell.id;
+                btn.className = `block-base ${cell.type === 'exp' ? 'block-power' : 'block-number'} block-anim text-3xl sm:text-4xl font-bold font-pixel`;
+                btn.style.animationDelay = (i * 25) + 'ms, ' + (i * 50) + 'ms';
+                btn.innerText = cell.val;
+                btn.onclick = () => handleBlockClick(cell.id);
+                gridEl.appendChild(btn);
+                cell.elem = btn;
+            });
+        }
+
+        function pickNewTarget() {
+            const baseCells = state.grid.filter(c => !c.removed && c.type === 'base');
+            const expCells = state.grid.filter(c => !c.removed && c.type === 'exp');
+            let combos = [];
+            baseCells.forEach(bc => {
+                expCells.forEach(ec => {
+                    const base = parseFloat(bc.val);
+                    if (!isCleanCombo(base, ec.val)) return;
+                    combos.push(computeValue(base, ec.val));
+                });
+            });
+            if (combos.length === 0 && baseCells.length && expCells.length) {
+                // fallback super langka: paksa satu pasangan valid & sederhana
+                baseCells[0].val = '2';
+                expCells[0].val = '²';
+                baseCells[0].elem.innerText = '2';
+                expCells[0].elem.innerText = '²';
+                combos.push(4);
+            }
+            state.targetValue = combos.length ? combos[Math.floor(Math.random() * combos.length)] : 4;
             state.isGolden = Math.random() < 0.15;
+            updateTargetDisplay();
+        }
+
+        function updateTargetDisplay() {
+            document.getElementById('target-value').innerText = fmtVal(state.targetValue);
             document.getElementById('question-box').classList.toggle('golden-question', state.isGolden);
             document.getElementById('golden-badge').classList.toggle('hidden', !state.isGolden);
-
-            if (state.mode === 'survival') {
-                document.getElementById('hud-stage').innerText = `WAVE ${state.survivalWave}`;
-            }
-            
-            renderBuildDisplay();
-            
-            let requiredVals = [...q.build];
-            if (q.buildAlt) {
-                requiredVals = requiredVals.concat(q.buildAlt);
-            }
-            generateGrid(requiredVals);
-            
-            if (state.mode === 'time_challenge') {
-                startTimer();
-            }
         }
 
-        function generateGrid(requiredVals) {
-            const grid = document.getElementById('block-grid');
-            grid.innerHTML = '';
-            document.getElementById('line-svg').innerHTML = ''; 
-            state.gridData = [];
-
-            const ops = ['×', '+', '-', '÷'];
-            const nums = ['2', '3', '4', '5', '10', '²', '³', '⁴', '⁵', '⁶', '⁰', '⁻¹', '⁻²'];
-            const brackets = ['(', ')'];
-            const pool = [...nums, ...ops, ...brackets];
-            
-            let finalBlocks = requiredVals.map(v => ({ val: v, required: true }));
-            while (finalBlocks.length < 16) {
-                finalBlocks.push({ val: pool[Math.floor(Math.random() * pool.length)], required: false });
-            }
-            
-            finalBlocks.sort(() => Math.random() - 0.5);
-
-            const powerSymbols = ['²', '³', '⁴', '⁵', '⁶', '⁰', '⁻¹', '⁻²'];
-
-            finalBlocks.forEach((item, idx) => {
-                const val = item.val;
-                const id = 'block-' + idx;
-                const btn = document.createElement('div');
-                
-                let colorClass = 'block-number';
-                if (powerSymbols.includes(val)) colorClass = 'block-power';
-                else if (ops.includes(val)) colorClass = 'block-operation';
-                else if (brackets.includes(val)) colorClass = 'block-bracket';
-
-                btn.className = `block-base ${colorClass} block-anim text-5xl font-bold font-pixel`;
-                btn.style.animationDelay = (idx * 30) + 'ms, ' + (idx * 60) + 'ms';
-                btn.innerText = val;
-                btn.id = id;
-                btn.onclick = () => handleBlockClick(id, val);
-                
-                grid.appendChild(btn);
-                state.gridData.push({ id, val, selected: false, required: item.required, removed: false, elem: btn });
-            });
-            
-            window.onresize = drawConnections;
+        function updateBarDisplay() {
+            const pct = Math.min(100, Math.round((state.matchesDone / state.matchesNeeded) * 100));
+            const bar = document.getElementById('power-bar-fill');
+            if (bar) bar.style.width = pct + '%';
+            const label = document.getElementById('power-bar-label');
+            if (label) label.innerText = `${state.matchesDone}/${state.matchesNeeded}`;
         }
 
-        function drawConnections() {
-            const svg = document.getElementById('line-svg');
-            svg.innerHTML = '';
-            if (state.buildBlocks.length < 2) return;
-
-            const gridContainer = document.getElementById('block-grid');
-            const rectGrid = gridContainer.getBoundingClientRect();
-
-            let d = '';
-            for (let i = 0; i < state.buildBlocks.length; i++) {
-                const el = document.getElementById(state.buildBlocks[i].id);
-                if (!el) continue;
-                
-                const rect = el.getBoundingClientRect();
-                const x = rect.left - rectGrid.left + (rect.width / 2);
-                const y = rect.top - rectGrid.top + (rect.height / 2);
-                
-                if (i === 0) {
-                    d += `M ${x} ${y} `;
-                } else {
-                    d += `L ${x} ${y} `;
+        function handleBlockClick(id) {
+            const cell = state.grid.find(c => c.id === id);
+            if (!cell || cell.removed) return;
+            
+            if (cell.selected) {
+                if (state.selected.length === 1) {
+                    cell.selected = false;
+                    cell.elem.classList.remove('block-selected');
+                    state.selected = [];
+                    SFX.deselect();
                 }
-            }
-
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', d);
-            path.setAttribute('stroke', '#00f3ff');
-            path.setAttribute('stroke-width', '6');
-            path.setAttribute('fill', 'none');
-            path.setAttribute('stroke-linecap', 'round');
-            path.setAttribute('stroke-linejoin', 'round');
-            
-            svg.appendChild(path);
-        }
-
-        function handleBlockClick(id, val) {
-            if (state.phase !== 'build') return;
-            
-            const blockObj = state.gridData.find(b => b.id === id);
-            if (blockObj.selected || blockObj.removed) return;
-
-            SFX.select();
-            blockObj.selected = true;
-            blockObj.elem.style.animation = 'none';
-            blockObj.elem.classList.add('block-selected');
-            
-            state.buildBlocks.push({id, val});
-            renderBuildDisplay();
-            drawConnections();
-            
-            checkBuildSequence();
-        }
-
-        function renderBuildDisplay() {
-            const display = document.getElementById('build-display');
-            display.innerHTML = '';
-            if(state.buildBlocks.length === 0) {
-                display.innerHTML = '<span class="text-slate-500 font-pixel text-xl">Ketuk balok untuk menyusun...</span>';
                 return;
             }
+            if (state.selected.length >= 2) return;
             
-            state.buildBlocks.forEach(b => {
-                const span = document.createElement('span');
-                span.className = 'mx-1 px-3 py-1 bg-slate-700 rounded text-2xl text-white font-pixel border border-slate-500 shadow-[0_0_8px_#00f3ff] inline-block';
-                span.innerText = b.val;
-                display.appendChild(span);
-            });
-            display.scrollLeft = display.scrollWidth;
-        }
-
-        function checkBuildSequence() {
-            const q = state.questions[state.qIdx];
-            const currentArr = state.buildBlocks.map(b => b.val);
+            SFX.select();
+            cell.selected = true;
+            cell.elem.classList.add('block-selected');
+            state.selected.push(cell);
             
-            const target1 = q.build;
-            const target2 = q.buildAlt;
-            
-            let isCorrect = currentArr.join(',') === target1.join(',') || 
-                            (target2 && currentArr.join(',') === target2.join(','));
-            
-            let isPrefix1 = true;
-            for(let i = 0; i < currentArr.length; i++) {
-                if(currentArr[i] !== target1[i]) isPrefix1 = false;
-            }
-            
-            let isPrefix2 = false;
-            if (target2) {
-                isPrefix2 = true;
-                for(let i = 0; i < currentArr.length; i++) {
-                    if(currentArr[i] !== target2[i]) isPrefix2 = false;
-                }
-            }
-
-            let isPrefix = isPrefix1 || isPrefix2;
-
-            if (isCorrect) {
-                SFX.select(); 
-                document.getElementById('solve-expression').innerText = state.buildBlocks.map(b=>b.val).join(' ');
-                
-                setTimeout(() => {
-                    state.phase = 'solve';
-                    document.getElementById('solve-overlay').classList.remove('hidden');
-                    document.getElementById('solve-overlay').classList.add('flex');
-                    document.getElementById('game-phase-text').innerText = 'TAHAP B: HITUNG HASILNYA';
-                    document.getElementById('answer-input').value = '';
-                    document.getElementById('answer-input').focus();
-                }, 300);
-            } else if (!isPrefix) {
-                handleWrongBuild(q);
+            if (state.selected.length === 2) {
+                setTimeout(evaluateSelection, 120);
             }
         }
 
-        function clearBuild() {
-            if(state.phase !== 'build') return;
-            SFX.deselect();
-            state.buildBlocks = [];
-            state.gridData.forEach(b => {
-                b.selected = false;
-                b.elem.classList.remove('block-selected');
-                if (!b.removed) b.elem.style.animation = '';
-            });
-            renderBuildDisplay();
-            document.getElementById('line-svg').innerHTML = ''; 
-        }
-
-        function submitAnswer() {
-            if (state.phase !== 'solve') return;
+        function evaluateSelection() {
+            if (state.selected.length < 2) return;
+            const [a, b] = state.selected;
+            let baseCell = null, expCell = null;
+            if (a.type === 'base' && b.type === 'exp') { baseCell = a; expCell = b; }
+            else if (a.type === 'exp' && b.type === 'base') { baseCell = b; expCell = a; }
             
-            const inputVal = document.getElementById('answer-input').value;
-            if (inputVal === '') return;
-
-            const q = state.questions[state.qIdx];
-            const numAns = parseFloat(inputVal); // Mendukung jawaban desimal seperti 0.5
-
-            if (numAns === q.ans) {
-                handleCorrect();
+            if (baseCell && expCell && isValidPair(baseCell, expCell, state.targetValue)) {
+                handleMatchSuccess(baseCell, expCell);
             } else {
-                handleWrong(q);
+                handleMatchFail(a, b);
             }
         }
 
-        function handleCorrect() {
-            stopTimer(); 
-            SFX.blast();
+        function handleMatchSuccess(baseCell, expCell) {
+            playBlastSfx();
+            baseCell.elem.classList.remove('block-selected');
+            expCell.elem.classList.remove('block-selected');
+            baseCell.elem.classList.add('block-blast');
+            expCell.elem.classList.add('block-blast');
             
-            document.getElementById('line-svg').innerHTML = ''; 
+            if (state.combo > 0 && (state.combo + 1) % 5 === 0) {
+                playComboBlastSfx();
+                const gameView = document.getElementById('view-game');
+                gameView.classList.add('anim-shake');
+                setTimeout(() => gameView.classList.remove('anim-shake'), 400);
+                const boomText = document.createElement('div');
+                boomText.className = 'anim-boom';
+                boomText.innerText = 'FIRE!';
+                gameView.appendChild(boomText);
+                setTimeout(() => boomText.remove(), 800);
+            }
             
-            // FIX: Menambahkan class 'hidden' agar overlay benar-benar hilang seketika
-            // sehingga ledakan balok di belakangnya langsung terlihat jelas!
-            document.getElementById('solve-overlay').classList.remove('flex');
-            document.getElementById('solve-overlay').classList.add('hidden'); 
-            
-            const gameView = document.getElementById('view-game');
-            gameView.classList.add('anim-shake');
-            setTimeout(() => gameView.classList.remove('anim-shake'), 400);
-
-            const shockwave = document.createElement('div');
-            shockwave.className = 'anim-shockwave';
-            gameView.appendChild(shockwave);
-            setTimeout(() => shockwave.remove(), 600);
-
-            const boomText = document.createElement('div');
-            boomText.className = 'anim-boom';
-            boomText.innerText = 'BOOM!';
-            gameView.appendChild(boomText);
-            setTimeout(() => boomText.remove(), 800); 
-            
-            state.buildBlocks.forEach(b => {
-                const el = document.getElementById(b.id);
-                if (el) {
-                    el.style.animation = '';
-                    el.classList.add('block-blast');
-                }
-            });
-
             state.combo++;
             if (state.combo > state.maxCombo) state.maxCombo = state.combo;
             
-            let points = 100 + (state.combo * 20);
-            if (state.fireMode) points += 50;
+            let points = 60 + (state.combo * 12);
+            if (state.fireMode) points += 30;
             if (state.isGolden) points *= 3;
             state.score += points;
+            state.coins += state.isGolden ? 3 : 1;
+            state.matchesDone++;
+            
             updateHUD();
+            updateBarDisplay();
             showScorePopup(points, state.isGolden);
-
-            if (state.combo > 0 && state.combo % 3 === 0) {
-                awardRandomPowerup();
+            
+            if (state.combo > 0 && state.combo % 4 === 0) awardRandomPowerup();
+            
+            state.selected = [];
+            
+            if (state.matchesDone >= state.matchesNeeded) {
+                setTimeout(() => { finishRound(); }, 420);
+                return;
             }
-
-            // FIX: Mempercepat jeda memuat soal berikutnya (dari 1200ms ke 850ms)
-            // agar tempo permainan terasa lebih cepat dan tidak membosankan.
+            
             setTimeout(() => {
-                state.qIdx++;
+                refillCell(baseCell);
+                refillCell(expCell);
+                pickNewTarget();
+            }, 420);
+        }
+
+        function refillCell(cell) {
+            const cfg = state.currentStageConfig;
+            const makeExp = Math.random() < 0.45;
+            cell.type = makeExp ? 'exp' : 'base';
+            cell.val = makeExp
+                ? cfg.exps[Math.floor(Math.random() * cfg.exps.length)]
+                : String(cfg.bases[Math.floor(Math.random() * cfg.bases.length)]);
+            cell.selected = false;
+            cell.removed = false;
+            
+            const el = cell.elem;
+            el.className = `block-base ${cell.type === 'exp' ? 'block-power' : 'block-number'} text-3xl sm:text-4xl font-bold font-pixel`;
+            el.innerText = cell.val;
+            el.style.animation = 'none';
+            void el.offsetWidth;
+            el.style.animation = '';
+            el.classList.add('block-fall');
+        }
+
+        function handleMatchFail(a, b) {
+            a.elem.classList.add('anim-shake');
+            b.elem.classList.add('anim-shake');
+            setTimeout(() => {
+                [a, b].forEach(c => {
+                    c.selected = false;
+                    if (c.elem) c.elem.classList.remove('block-selected', 'anim-shake');
+                });
+            }, 400);
+            state.selected = [];
+            
+            if (state.shieldActive) {
+                state.shieldActive = false;
+                SFX.deselect();
+                state.combo = 0;
+                updateHUD();
+                showModal('Shield Melindungi!', 'Pasangan salah, tapi Shield menahan kesalahan. Nyawa aman!', '🛡️', `<button onclick="closeModal();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Lanjut</button>`);
+                return;
+            }
+            
+            SFX.wrong();
+            state.hearts--;
+            state.combo = 0;
+            state.mistakes++;
+            updateHUD();
+            
+            if (state.hearts <= 0) {
+                stopTimer();
                 if (state.mode === 'survival') {
-                    state.survivalWave++;
-                    if (state.survivalWave % 5 === 0 && state.survivalTimeLimit > 5) {
-                        state.survivalTimeLimit--;
-                    }
-                    if (state.qIdx >= state.questions.length) {
-                        state.questions.sort(() => Math.random() - 0.5);
-                        state.qIdx = 0;
-                    }
-                    loadQuestion();
-                } else if (state.qIdx >= state.questions.length) {
-                    showStageClear();
+                    endEndlessMode('💥 Nyawa habis di Survival!');
+                } else if (state.mode === 'time_challenge') {
+                    endEndlessMode('💥 Nyawa habis di Time Challenge!');
                 } else {
-                    loadQuestion();
+                    showModal('GAME OVER', 'Nyawa habis! Power Core gagal diselamatkan.', '💥', `<button onclick="closeModal(); navTo('map');" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Kembali</button>`);
                 }
-            }, 850);
+            }
+        }
+
+        function finishRound() {
+            if (state.mode === 'normal') {
+                showStageClear();
+                return;
+            }
+            if (state.mode === 'time_challenge') {
+                state.score += 150;
+                state.coins += 5;
+                state.timeLeft = Math.min(90, state.timeLeft + 8);
+                state.matchesDone = 0;
+                state.matchesNeeded = Math.min(10, state.matchesNeeded + 1);
+                updateHUD();
+                updateBarDisplay();
+                updateTimerDisplay();
+                showBonusToast('⚡ +8s BONUS!');
+                pickNewTarget();
+                return;
+            }
+            if (state.mode === 'survival') {
+                state.score += 80;
+                state.coins += 3;
+                updateHUD();
+                nextSurvivalWave();
+            }
+        }
+
+        function showBonusToast(text) {
+            const row = document.getElementById('score-row');
+            if (!row) return;
+            const popup = document.createElement('div');
+            popup.className = 'score-popup absolute font-pixel text-base pointer-events-none right-4 top-0 text-cyan-300';
+            popup.innerText = text;
+            row.appendChild(popup);
+            setTimeout(() => popup.remove(), 900);
+        }
+
+        function shuffleGrid() {
+            if (state.selected.length) {
+                state.selected.forEach(c => { c.selected = false; if (c.elem) c.elem.classList.remove('block-selected'); });
+                state.selected = [];
+            }
+            const vals = state.grid.map(c => ({ type: c.type, val: c.val }));
+            for (let i = vals.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [vals[i], vals[j]] = [vals[j], vals[i]];
+            }
+            state.grid.forEach((c, i) => {
+                c.type = vals[i].type;
+                c.val = vals[i].val;
+                c.elem.className = `block-base ${c.type === 'exp' ? 'block-power' : 'block-number'} text-3xl sm:text-4xl font-bold font-pixel`;
+                c.elem.innerText = c.val;
+                c.elem.style.animation = 'none';
+                void c.elem.offsetWidth;
+                c.elem.style.animation = '';
+                c.elem.classList.add('block-fall');
+            });
+            SFX.select();
+        }
+
+        function findValidComboInGrid() {
+            const baseCells = state.grid.filter(c => !c.removed && c.type === 'base');
+            const expCells = state.grid.filter(c => !c.removed && c.type === 'exp');
+            for (const bc of baseCells) {
+                for (const ec of expCells) {
+                    if (isValidPair(bc, ec, state.targetValue)) return { baseCell: bc, expCell: ec };
+                }
+            }
+            return null;
         }
 
         function showScorePopup(points, isGolden) {
@@ -1274,73 +1398,21 @@
             }
         }
 
-        function handleWrongBuild(q) {
-            stopTimer(); 
-
-            if (state.shieldActive) {
-                state.shieldActive = false;
-                SFX.deselect();
-                state.combo = 0;
-                updateHUD();
-                showModal('Shield Melindungi!', 'Jalur salah, tapi Shield menahan kesalahan. Nyawa aman!', '🛡️', `<button onclick="closeModal(); clearBuild(); if(state.mode!=='normal') startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Ulang Susun</button>`);
-                return;
-            }
-
-            SFX.wrong();
-            state.hearts--; 
-            state.combo = 0;
-            state.mistakes++;
-            updateHUD();
-            
-            const restartFn = state.mode !== 'normal' ? "navTo('menu')" : "startStage(state.worldId, state.stageId)";
-            
-            if (state.hearts <= 0) {
-                showModal('GAME OVER', buildGameOverMessage('Nyawa habis karena salah menyusun jalur! Power Core gagal diselamatkan.'), '💥', `<button onclick="closeModal(); ${restartFn};" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Kembali</button>`);
-            } else {
-                showModal('Jalur Salah!', 'Hati-hati! Memilih balok yang bukan bagian dari rumus akan mengurangi nyawamu.', '🧱', `<button onclick="closeModal(); clearBuild(); if(state.mode!=='normal') startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Ulang Susun</button>`);
-            }
-        }
-
-        function handleWrong(q) {
-            stopTimer(); 
-
-            if (state.shieldActive) {
-                state.shieldActive = false;
-                SFX.deselect();
-                state.combo = 0;
-                updateHUD();
-                document.getElementById('answer-input').value = '';
-                showModal('Shield Melindungi!', `Jawaban meleset, tapi Shield menahan kesalahan. Nyawa aman!\n\nHint: ${q.hint}`, '🛡️', `<button onclick="closeModal(); if(state.mode!=='normal') startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Hitung Ulang</button>`);
-                return;
-            }
-
-            SFX.wrong();
-            state.hearts--;
-            state.combo = 0;
-            state.mistakes++;
-            updateHUD();
-            
-            document.getElementById('answer-input').value = '';
-            
-            const restartFn = state.mode !== 'normal' ? "navTo('menu')" : "startStage(state.worldId, state.stageId)";
-
-            if (state.hearts <= 0) {
-                showModal('GAME OVER', buildGameOverMessage('Kehabisan Nyawa! Power Core gagal diselamatkan.'), '💥', `<button onclick="closeModal(); ${restartFn};" class="px-6 py-2 bg-red-600 rounded-lg text-white font-bold">Kembali</button>`);
-            } else {
-                showModal('Hitungan Salah', `Jawabanmu kurang tepat. Coba hitung perlahan.\n\nHint: ${q.hint}`, '❌', `<button onclick="closeModal(); if(state.mode!=='normal') startTimer();" class="px-6 py-2 bg-yellow-600 rounded-lg text-white font-bold">Hitung Ulang</button>`);
-            }
+        function isPartOfValidPair(cell) {
+            const others = state.grid.filter(c => !c.removed && c.id !== cell.id && c.type !== cell.type);
+            return others.some(o => {
+                const baseCell = cell.type === 'base' ? cell : o;
+                const expCell = cell.type === 'exp' ? cell : o;
+                return isValidPair(baseCell, expCell, state.targetValue);
+            });
         }
 
         function usePowerup(type) {
             if (!state.powerups[type] || state.powerups[type] <= 0) return;
 
             if (type === 'freeze') {
-                if (state.mode !== 'time_challenge' && state.mode !== 'survival') {
-                    showInfo('Freeze Time hanya berguna saat Time Challenge atau Survival aktif.');
-                    return;
-                }
                 state.powerups.freeze--;
-                state.timeLeft += 5;
+                state.timeLeft = Math.min(state.currentTimeLimit, state.timeLeft + 5);
                 updateTimerDisplay();
                 updatePowerupHUD();
                 SFX.select();
@@ -1355,21 +1427,15 @@
                 SFX.select();
                 showInfo('🛡️ Shield aktif! Kesalahan berikutnya tidak akan mengurangi nyawamu.');
             } else if (type === 'fifty') {
-                if (state.phase !== 'build') return;
-                const decoys = state.gridData.filter(b => !b.required && !b.selected && !b.removed);
-                if (decoys.length === 0) return;
+                const decoys = state.grid.filter(c => !c.removed && !c.selected && !isPartOfValidPair(c));
+                if (decoys.length < 2) {
+                    showInfo('Tidak ada balok jebakan untuk dihapus sekarang.');
+                    return;
+                }
                 state.powerups.fifty--;
                 decoys.sort(() => Math.random() - 0.5);
-                const toRemove = decoys.slice(0, Math.max(1, Math.ceil(decoys.length / 2)));
-                toRemove.forEach(b => {
-                    b.removed = true;
-                    b.elem.style.animation = 'none';
-                    b.elem.style.transition = 'opacity 0.3s, transform 0.3s';
-                    b.elem.style.opacity = '0';
-                    b.elem.style.transform = 'scale(0)';
-                    b.elem.onclick = null;
-                    setTimeout(() => { if (b.elem) b.elem.style.visibility = 'hidden'; }, 300);
-                });
+                const toClear = decoys.slice(0, Math.max(2, Math.floor(decoys.length / 2)));
+                toClear.forEach(c => refillCell(c));
                 updatePowerupHUD();
                 SFX.select();
             }
@@ -1480,19 +1546,24 @@
         }
 
         function useHint() {
-            stopTimer(); 
-            const q = state.questions[state.qIdx];
-            let hintMsg = q.hint || "Ingat materi bilangan berpangkat!";
-            if (state.phase === 'build') {
-                hintMsg = `Untuk Tahap A, susun balok sesuai soal. Kamu bisa menyusun persis seperti soal atau jabarkan (contoh: 2² jadi 2 × 2).`;
+            const found = findValidComboInGrid();
+            if (!found) {
+                showInfo('Tidak ada hint yang bisa ditampilkan sekarang. Coba 🔀 Acak dulu!');
+                return;
             }
-            
-            state.score = Math.max(0, state.score - 20); 
+            state.score = Math.max(0, state.score - 15);
             updateHUD();
-            showModal('Bantuan', hintMsg, '💡', `<button onclick="closeModal(); if(state.mode==='time_challenge') startTimer();" class="px-6 py-2 bg-blue-600 rounded-lg text-white font-bold">Mengerti</button>`);
+            found.baseCell.elem.classList.add('block-hint');
+            found.expCell.elem.classList.add('block-hint');
+            SFX.select();
+            setTimeout(() => {
+                if (found.baseCell.elem) found.baseCell.elem.classList.remove('block-hint');
+                if (found.expCell.elem) found.expCell.elem.classList.remove('block-hint');
+            }, 2000);
         }
 
         function showStageClear() {
+            stopTimer();
             SFX.win();
             
             if (state.mode === 'normal' && state.stageId === state.unlockedStage) {
@@ -1580,16 +1651,10 @@
         function confirmExit() {
             stopTimer();
             showModal('Keluar Stage?', 'Progres di stage ini akan hilang.', '⚠️', `
-                <button onclick="closeModal(); if(state.mode === 'time_challenge') startTimer();" class="px-4 py-2 bg-slate-600 rounded-lg text-white font-bold">Batal</button>
+                <button onclick="closeModal(); startTimer();" class="px-4 py-2 bg-slate-600 rounded-lg text-white font-bold">Batal</button>
                 <button onclick="closeModal(); stopTimer(); navTo('map');" class="px-4 py-2 bg-red-600 rounded-lg text-white font-bold">Keluar</button>
             `);
         }
-        
-        document.getElementById('answer-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                submitAnswer();
-            }
-        });
 
         initParticles();
         updateCoinDisplay();
