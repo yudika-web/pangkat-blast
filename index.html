@@ -474,20 +474,8 @@
             </div>
         </div>
 
-        <div class="flex justify-center gap-3 px-4 py-1 bg-slate-900/60 z-30 shrink-0" id="powerup-bar">
-            <button id="pu-freeze" onclick="usePowerup('freeze')" class="powerup-btn w-9 h-9 bg-cyan-900/60 border border-cyan-400 rounded-lg flex items-center justify-center text-base active:scale-90 transition-transform" disabled>
-                ❄️<span class="powerup-badge" id="badge-freeze">0</span>
-            </button>
-            <button id="pu-shield" onclick="usePowerup('shield')" class="powerup-btn w-9 h-9 bg-blue-900/60 border border-blue-400 rounded-lg flex items-center justify-center text-base active:scale-90 transition-transform" disabled>
-                🛡️<span class="powerup-badge" id="badge-shield">0</span>
-            </button>
-            <button id="pu-fifty" onclick="usePowerup('fifty')" class="powerup-btn w-9 h-9 bg-pink-900/60 border border-pink-400 rounded-lg flex items-center justify-center text-base active:scale-90 transition-transform" disabled>
-                ✂️<span class="powerup-badge" id="badge-fifty">0</span>
-            </button>
-        </div>
-
         <!-- POWER BAR: fill this to clear the stage -->
-        <div class="px-4 pt-2 pb-1 bg-slate-950/60 z-30 shrink-0">
+        <div class="px-4 pt-1.5 pb-1 bg-slate-950/60 z-30 shrink-0">
             <div class="flex justify-between items-center mb-1">
                 <span class="text-[11px] font-pixel tracking-widest text-cyan-300">⚡ POWER BAR</span>
                 <span class="text-[11px] font-pixel text-slate-400" id="power-bar-label">0/0</span>
@@ -497,16 +485,31 @@
             </div>
         </div>
 
-        <div id="question-box" class="p-2 flex flex-col items-center justify-center shrink-0 bg-gradient-to-b from-slate-800 to-transparent z-30 mx-2 mt-1" style="min-height: clamp(58px, 10vh, 90px);">
-            <div id="golden-badge" class="hidden text-yellow-300 font-pixel text-sm mb-1 tracking-widest animate-pulse">✨ TARGET EMAS! POIN x3 ✨</div>
-            <div class="text-[11px] text-slate-400 mb-0.5 font-bold tracking-widest uppercase">Pasangkan BASIS + PANGKAT = </div>
-            <div id="game-question" class="text-4xl sm:text-5xl font-bold text-center flex items-center justify-center text-white font-pixel drop-shadow-[0_0_10px_#00f3ff]">
-                <span id="target-value">0</span>
+        <!-- BUFF + SOAL: sejajar dalam satu baris agar hemat ruang & soal tidak menutupi blok -->
+        <div id="action-row" class="flex items-stretch gap-2 px-3 py-1.5 mx-2 mt-1.5 bg-slate-900/70 border border-slate-700/60 rounded-xl z-30 shrink-0">
+            <div class="flex gap-1.5 shrink-0 items-center" id="powerup-bar">
+                <button id="pu-freeze" onclick="usePowerup('freeze')" class="powerup-btn w-8 h-8 bg-cyan-900/60 border border-cyan-400 rounded-lg flex items-center justify-center text-sm active:scale-90 transition-transform" disabled>
+                    ❄️<span class="powerup-badge" id="badge-freeze">0</span>
+                </button>
+                <button id="pu-shield" onclick="usePowerup('shield')" class="powerup-btn w-8 h-8 bg-blue-900/60 border border-blue-400 rounded-lg flex items-center justify-center text-sm active:scale-90 transition-transform" disabled>
+                    🛡️<span class="powerup-badge" id="badge-shield">0</span>
+                </button>
+                <button id="pu-fifty" onclick="usePowerup('fifty')" class="powerup-btn w-8 h-8 bg-pink-900/60 border border-pink-400 rounded-lg flex items-center justify-center text-sm active:scale-90 transition-transform" disabled>
+                    ✂️<span class="powerup-badge" id="badge-fifty">0</span>
+                </button>
+            </div>
+            <div class="w-px self-stretch bg-slate-700/70 shrink-0"></div>
+            <div id="question-box" class="flex-1 min-w-0 flex flex-col items-center justify-center px-1 py-0.5">
+                <div id="golden-badge" class="hidden text-yellow-300 font-pixel text-[10px] leading-tight tracking-widest animate-pulse">✨ TARGET EMAS! POIN x3 ✨</div>
+                <div class="text-[10px] text-slate-400 leading-tight font-bold tracking-widest uppercase text-center">BASIS + PANGKAT =</div>
+                <div id="game-question" class="text-3xl sm:text-4xl font-bold text-center flex items-center justify-center text-white font-pixel drop-shadow-[0_0_10px_#00f3ff] leading-none">
+                    <span id="target-value">0</span>
+                </div>
             </div>
         </div>
 
-        <div class="flex-1 p-2 flex items-center justify-center relative w-full overflow-hidden">
-            <div id="grid-wrapper" class="relative rounded-2xl transition-all mx-auto" style="width: min(320px, 90vw, 44vh); aspect-ratio: 4 / 5;">
+        <div id="grid-area" class="flex-1 min-h-0 p-1.5 flex items-center justify-center relative w-full overflow-hidden">
+            <div id="grid-wrapper" class="relative rounded-2xl transition-all mx-auto" style="width: min(320px, 90vw); aspect-ratio: 4 / 5; max-height: 100%;">
                 <div id="block-grid" class="grid grid-cols-4 grid-rows-5 gap-1.5 sm:gap-2 w-full h-full relative z-10 p-1.5">
                     <!-- Blocks generated via JS -->
                 </div>
@@ -982,6 +985,60 @@
             }
             if (viewId === 'menu') {
                 updateCoinDisplay();
+            }
+            if (viewId === 'game') {
+                requestAnimationFrame(fitGridWrapper);
+            }
+        }
+
+        // === RESPONSIVE GRID FIT ===
+        // Menghitung ulang ukuran #grid-wrapper berdasarkan ruang nyata yang tersisa
+        // di #grid-area (bukan asumsi vh statis), supaya blok tidak pernah kepotong
+        // atau ketutup panel lain di device manapun (termasuk iPhone X dengan notch
+        // & home indicator, atau saat toolbar Safari muncul/hilang).
+        function fitGridWrapper() {
+            const area = document.getElementById('grid-area');
+            const wrap = document.getElementById('grid-wrapper');
+            if (!area || !wrap) return;
+
+            const rect = area.getBoundingClientRect();
+            const cs = getComputedStyle(area);
+            const padX = parseFloat(cs.paddingLeft || 0) + parseFloat(cs.paddingRight || 0);
+            const padY = parseFloat(cs.paddingTop || 0) + parseFloat(cs.paddingBottom || 0);
+            const availW = rect.width - padX;
+            const availH = rect.height - padY;
+            if (availW <= 10 || availH <= 10) return;
+
+            const RATIO = 4 / 5; // lebar : tinggi (4 kolom x 5 baris)
+            let w = availW;
+            let h = w / RATIO;
+            if (h > availH) {
+                h = availH;
+                w = h * RATIO;
+            }
+            const MAX_W = 420;
+            if (w > MAX_W) {
+                w = MAX_W;
+                h = w / RATIO;
+            }
+            wrap.style.width = Math.floor(w) + 'px';
+            wrap.style.height = Math.floor(h) + 'px';
+        }
+
+        let gridFitObserver = null;
+        function initGridFitObserver() {
+            const area = document.getElementById('grid-area');
+            if (!area) return;
+            if (window.ResizeObserver) {
+                // Menangkap perubahan tinggi panel di atas grid (mis. badge soal emas
+                // muncul/hilang) secara otomatis, bukan cuma saat resize window.
+                gridFitObserver = new ResizeObserver(() => fitGridWrapper());
+                gridFitObserver.observe(area);
+            }
+            window.addEventListener('resize', fitGridWrapper);
+            window.addEventListener('orientationchange', () => setTimeout(fitGridWrapper, 150));
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', fitGridWrapper);
             }
         }
 
@@ -1962,6 +2019,7 @@
 
         initParticles();
         initApp();
+        initGridFitObserver();
         
     </script>
 </body>
